@@ -237,23 +237,25 @@ function setupScreen() {
 
 /* ---------- Planes y licencias ---------- */
 const FEATURES = [['credits', 'Créditos y cobros'], ['quotes', 'Cotizaciones'], ['purchases', 'Compras y proveedores'], ['reports', 'Reportes'], ['whatsapp', 'Notificaciones por WhatsApp'],
-  ['layaway', 'Apartados (plan separe)'], ['loyalty', 'Programa de puntos'], ['promos', 'Promociones automáticas'], ['commissions', 'Comisiones de vendedores'],
+  ['layaway', 'Apartados (plan separe)'], ['loyalty', 'Programa de puntos'], ['promos', 'Ofertas y descuentos automáticos'], ['commissions', 'Comisiones de vendedores'],
   ['ownerAlerts', 'Resúmenes al dueño por WhatsApp'], ['branding', 'Logo propio en facturas'], ['support', 'Soporte prioritario']];
 const PREMIUM_EXTRAS = ['layaway', 'loyalty', 'promos', 'commissions', 'ownerAlerts', 'branding', 'support'];
-const PLANS_VER = 3;
-/* Lo que incluye cada plan está fijo en la app (el número de licencia solo dice si es Básica o Premium) */
+const PLANS_VER = 4;
+/* Lo que incluye cada plan está fijo en el programa (el número de licencia solo dice si es Básica o Premium) */
 const DEFAULT_PLANS = () => ({
   basic: { name: 'Básica', cop: 140000, usd: 43.31, users: 2, products: 300, off: ['purchases', 'reports', 'whatsapp', ...PREMIUM_EXTRAS] },
   premium: { name: 'Premium', cop: 380000, usd: 117.56, users: 0, products: 0, off: [] },
 });
+const DURATIONS = [['Mensual', 1], ['Trimestral', 3], ['Semestral', 6], ['Anual', 12]];
+const WARN_DAYS = 2;   // el programa avisa 2 días antes de vencer
 const fmtCOP = n => '$ ' + Math.round(+n || 0).toLocaleString('es-CO') + ' COP';
 const fmtUSD = n => 'US$ ' + (+n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const planOf = c => S.db.settings.plans[c.tier] || S.db.settings.plans.premium;
 const limText = p => [p.users > 0 ? `${p.users} usuario${p.users === 1 ? '' : 's'}` : 'usuarios ilimitados', p.products > 0 ? `${p.products} productos` : 'productos ilimitados', p.off.length ? `${FEATURES.length - p.off.length} de ${FEATURES.length} funciones` : 'todas las funciones y beneficios'].join(' · ');
 const featList = p => FEATURES.map(([k, n]) => `<div style="font-size:12px;opacity:${p.off.includes(k) ? '.45' : '1'}">${p.off.includes(k) ? '✗' : '✓'} ${n}</div>`).join('');
 
-/* Número de licencia permanente NOIR-A1B2-C3D4-E5F6: lleva el plan y solo este panel puede crearlo.
-   La app lo comprueba sin internet (mismo código que js/licshort.js de NOIR STORE). */
+/* Número de licencia NOIR-A1B2-C3D4-E5F6: lleva el plan y solo este panel puede crearlo.
+   El programa lo comprueba con el mismo código que js/licshort.js de NOIR STORE. */
 const LicShort = (() => {
   const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const TOTAL = 24n ** 6n * 10n ** 6n, DATA = 1n << 21n, MACS = TOTAL / DATA;
@@ -307,9 +309,12 @@ function newKey(tier) {
 }
 const DEFAULT_APP_URL = 'https://github.com/noirstudio-web/noir-store/releases/latest/download/NOIR-STORE-Instalador.exe';
 const appUrlOf = () => (S.db.settings.apkUrl && !/\.apk$/i.test(S.db.settings.apkUrl) ? S.db.settings.apkUrl : DEFAULT_APP_URL);
+const planLabel = c => `${planOf(c).name}${c.plan ? ' · ' + c.plan : ''}`;
 const licenseMsg = c => c.upgrade
-  ? `Hola ${c.contact || c.business} 👋\n\nTu licencia de *NOIR STORE* para *${c.business}* ahora es *${planOf(c).name}* · permanente.\n\n🔑 Tu nuevo número de licencia:\n${c.key}\n\nEn el programa ve a *Configuración → Licencia*, escríbelo en “Cambiar a otro plan” y listo. Tus datos se conservan.\n\n${S.db.settings.vendor}`
-  : `Hola ${c.contact || c.business} 👋\n\nGracias por tu compra. Ya tienes *NOIR STORE* para *${c.business}*.\nLicencia: *${planOf(c).name}* · permanente (es tuya, no se vence)\n${c.tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n💻 1. Descarga el programa en tu computador (Windows):\n${appUrlOf()}\nÁbrelo e instálalo. Si Windows muestra “Windows protegió tu PC”, toca *Más información → Ejecutar de todas formas*.\n\n🔑 2. Abre *NOIR STORE* (queda en el escritorio) y escribe tu número de licencia:\n${c.key}\n\n👤 3. Crea tu usuario y contraseña, y listo.\n\n💾 Tu información queda guardada en tu equipo: descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`;
+  ? `Hola ${c.contact || c.business} 👋\n\nTu plan de *NOIR STORE* para *${c.business}* ahora es *${planOf(c).name}*.\n\n🔑 Tu nuevo número de licencia:\n${c.key}\n\nEn el programa ve a *Configuración → Suscripción*, escríbelo en “Cambiar de plan” y listo. Tus datos se conservan.\nTu suscripción vence el *${fmtDate(c.expires)}*.\n\n${S.db.settings.vendor}`
+  : `Hola ${c.contact || c.business} 👋\n\nGracias por tu compra. Ya tienes *NOIR STORE* para *${c.business}*.\nPlan: *${planLabel(c)}* · vence el *${fmtDate(c.expires)}*\n${c.tier === 'premium' ? '⭐ Incluye apartados, puntos, ofertas, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n💻 1. Descarga el programa en tu computador (Windows):\n${appUrlOf()}\nÁbrelo e instálalo. Si Windows muestra “Windows protegió tu PC”, toca *Más información → Ejecutar de todas formas*.\n\n🔑 2. Abre *NOIR STORE* (queda en el escritorio) y escribe tu número de licencia:\n${c.key}\n(La primera vez necesitas internet.)\n\n👤 3. Crea tu usuario y contraseña, y listo.\n\n🔔 El programa te avisa 2 días antes de que venza tu suscripción.\n💾 Descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`;
+const renewMsg = c => `Hola ${c.contact || c.business} 👋\n\n✅ Tu suscripción de *NOIR STORE* (${planLabel(c)}) quedó renovada hasta el *${fmtDate(c.expires)}*.\n\nSe aplica sola en tu programa cuando esté conectado a internet. Si te había salido “Tu suscripción ha caducado”, toca *Ya renové · verificar*.\n\n¡Gracias por seguir con nosotros!\n${S.db.settings.vendor}`;
+const reminderMsg = c => { const d = daysTo(c.expires); return `Hola ${c.contact || c.business} 👋\n\nTe recordamos que tu suscripción de *NOIR STORE* (${planLabel(c)}) ${d < 0 ? `*caducó* el ${fmtDate(c.expires)}` : d === 0 ? '*vence hoy*' : `vence el *${fmtDate(c.expires)}* (${d === 1 ? 'mañana' : `en ${d} días`})`}.\nValor mensual: ${fmtCOP(planOf(c).cop)}.\n\n¿Deseas renovarla? Responde a este mensaje y te la activamos al instante.\n\n${S.db.settings.vendor}`; };
 function migratePanel() {
   const d = S.db;
   d.settings.plans = Object.assign(DEFAULT_PLANS(), d.settings.plans || {});
@@ -318,24 +323,73 @@ function migratePanel() {
   d.issuedKeys = d.issuedKeys || [];
   d.clients.forEach(c => {
     if (!c.tier) c.tier = c.nextTier || 'premium';
+    if (c.status !== 'suspended') c.status = c.status === 'disabled' ? 'suspended' : 'active';
     c.events = c.events || [];
+    if (c.plan && c.plan.includes(' · ')) c.plan = c.plan.split(' · ')[1];
     if (!c.key) c.key = newKey(c.tier);
     else if (!validKey(c)) {
       const nk = newKey(c.tier);
       c.oldKeys = [...(c.oldKeys || []), c.key];
-      logEvent(c, 'Número de licencia permanente asignado', `${c.key} → ${nk}`);
+      logEvent(c, 'Número de licencia nuevo (programa para computador)', `${c.key} → ${nk}`);
       c.key = nk; delete c.sentAt;
     }
   });
   store.save();
 }
 const logEvent = (c, type, note = '') => { c.events = c.events || []; c.events.push({ date: new Date().toISOString(), type, note }); };
-const saveClient = c => { const i = S.db.clients.findIndex(x => x.id === c.id); if (i >= 0) S.db.clients[i] = c; else S.db.clients.push(c); store.save(); };
+const saveClient = c => { const i = S.db.clients.findIndex(x => x.id === c.id); if (i >= 0) S.db.clients[i] = c; else S.db.clients.push(c); store.save(); schedulePublish(); };
+
+/* ---------- Publicación en línea: vencimientos y suspensiones que el programa de cada cliente consulta ---------- */
+const GH_SLOT = 'noirlic-gh', STATE_REPO = 'noirstudio-web/noir-activaciones';
+const ghToken = () => { try { return localStorage.getItem(GH_SLOT) || ''; } catch (e) { return ''; } };
+const stKey = k => sha256('noir-st|' + k).slice(0, 20);
+async function buildState() {
+  const lic = {};
+  for (const c of S.db.clients) {
+    if (!c.expires) continue;
+    const row = [c.expires, c.status === 'suspended' ? 's' : 'a'];
+    for (const k of [c.key, ...(c.oldKeys || [])]) { const r = LicShort.check(S.sk, k); if (r) lic[stKey(r.key)] = row; }
+  }
+  return makeCode({ type: 'estado', t: Date.now(), n: Object.keys(lic).length, lic });
+}
+async function ghPut(file, text, message) {
+  const url = `https://api.github.com/repos/${STATE_REPO}/contents/${file}`, h = { Authorization: 'Bearer ' + ghToken(), Accept: 'application/vnd.github+json' };
+  const g = await fetch(`${url}?ref=main&t=${Date.now()}`, { headers: h, cache: 'no-store' });
+  if (g.status === 401 || g.status === 403) throw new Error('el permiso de GitHub no es válido o venció');
+  const sha = g.ok ? (await g.json()).sha : undefined;
+  const r = await fetch(url, { method: 'PUT', headers: h, body: JSON.stringify({ message, content: btoa(text), sha }) });
+  if (!r.ok) throw new Error(r.status === 401 || r.status === 403 || r.status === 404 ? 'el permiso de GitHub no tiene acceso a noir-activaciones (Contents: Read and write)' : 'GitHub respondió ' + r.status);
+}
+let pubTimer = null, pubBusy = false, pubAgain = false;
+function schedulePublish() { clearTimeout(pubTimer); pubTimer = setTimeout(() => publishState(), 700); }
+async function publishState(manual = false) {
+  const s = S.db.settings;
+  if (!S.signKey) return false;
+  if (!ghToken()) { s.pubErr = 'sin-conexion'; store.save(); pubBadge(); if (manual) toast('Configura la conexión en línea (Configuración → Conexión en línea)', 'warn'); return false; }
+  if (pubBusy) { pubAgain = true; return false; }
+  pubBusy = true; pubBadge('publicando');
+  try { await ghPut('estado.txt', await buildState(), 'Estado de suscripciones'); s.pubAt = new Date().toISOString(); delete s.pubErr; if (manual) toast('Publicado: tus clientes reciben los cambios al abrir el programa o en menos de 1 hora'); }
+  catch (e) { s.pubErr = e.message; if (manual) toast('No se pudo publicar: ' + e.message, 'err'); }
+  pubBusy = false; store.save(); pubBadge();
+  if (pubAgain) { pubAgain = false; schedulePublish(); }
+  return !s.pubErr;
+}
+function pubBadge(busy) {
+  const b = $('#pub'); if (!b) return;
+  const s = S.db.settings;
+  b.className = 'btn sm ' + (busy ? 'ghost' : s.pubErr ? 'danger' : 'success');
+  b.textContent = busy ? '🌐 Publicando…' : s.pubErr === 'sin-conexion' ? '⚠️ Sin conexión en línea' : s.pubErr ? '⚠️ Error al publicar' : `🌐 En línea · ${s.pubAt ? new Date(s.pubAt).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '—'}`;
+  b.title = s.pubErr && s.pubErr !== 'sin-conexion' ? s.pubErr : 'Vencimientos y suspensiones publicados para los programas de tus clientes';
+}
 
 /* ---------- Estado de cada cliente ---------- */
 function clientState(c) {
-  if (!c.sentAt) return { k: 'pending', label: c.upgrade ? 'Número nuevo sin enviar' : 'Sin entregar', cls: 'warn' };
-  return { k: 'sent', label: `Entregada · ${fmtDate(c.sentAt)}`, cls: 'ok' };
+  if (!c.expires) return { k: 'pending', label: 'Sin entregar', cls: 'warn' };
+  if (c.status === 'suspended') return { k: 'suspended', label: 'Suspendida', cls: 'err' };
+  const d = daysTo(c.expires);
+  if (d < 0) return { k: 'expired', label: `Caducada hace ${-d} d`, cls: 'err', d };
+  if (d <= WARN_DAYS) return { k: 'soon', label: d === 0 ? 'Vence hoy' : `Vence en ${d} d`, cls: 'warn', d };
+  return { k: 'active', label: `Activa · ${d} d`, cls: 'ok', d };
 }
 const waLink = (phone, text) => `https://wa.me/${String(phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
 const tierBadge = c => `<span class="badge ${c.tier === 'premium' ? 'info' : ''}">${esc(planOf(c).name)}</span>`;
@@ -345,52 +399,63 @@ const salesTotal = cl => { const t = { COP: 0, USD: 0 }; cl.forEach(c => (c.sale
 function app() {
   migratePanel();
   const cl = S.db.clients, st = cl.map(clientState), paid = salesTotal(cl);
+  const live = cl.filter((c, i) => ['active', 'soon'].includes(st[i].k));
+  const mrr = live.reduce((a, c) => a + (+planOf(c).cop || 0), 0);
+  const n = k => st.filter(s => s.k === k).length;
   $('#root').innerHTML = `
     <header><img src="assets/logo-nav.png" alt="NOIR"><span class="tag hide-m">Panel de licencias</span><span class="spacer"></span>
-      <button class="btn sm ghost" id="tool">Verificar</button><button class="btn sm ghost" id="cfg">Configuración</button><button class="btn sm ghost" id="lock">Bloquear</button></header>
+      <button class="btn sm" id="pub"></button><button class="btn sm ghost" id="tool">Verificar</button><button class="btn sm ghost" id="cfg">Configuración</button><button class="btn sm ghost" id="lock">Bloquear</button></header>
     <main>
-      <div class="kpis" style="grid-template-columns:repeat(5,minmax(0,1fr))">
-        <div class="card kpi"><div class="l">Clientes</div><div class="v">${cl.length}</div></div>
-        <div class="card kpi"><div class="l">Licencias Básica</div><div class="v">${cl.filter(c => c.tier === 'basic').length}</div><div class="small muted">${fmtCOP(S.db.settings.plans.basic.cop)}</div></div>
-        <div class="card kpi"><div class="l">Licencias Premium</div><div class="v" style="color:var(--info)">${cl.filter(c => c.tier === 'premium').length}</div><div class="small muted">${fmtCOP(S.db.settings.plans.premium.cop)}</div></div>
-        <div class="card kpi"><div class="l">Sin entregar</div><div class="v" style="color:var(--warn)">${st.filter(s => s.k === 'pending').length}</div></div>
-        <div class="card kpi"><div class="l">Total vendido</div><div class="v" style="font-size:20px">${fmtCOP(paid.COP)}</div>${paid.USD ? `<div class="small muted">+ ${fmtUSD(paid.USD)}</div>` : ''}</div>
+      ${S.db.settings.pubErr === 'sin-conexion' ? `<div class="callout warn" style="margin-bottom:16px">⚠️ <b>Falta un paso para que las suspensiones y renovaciones lleguen a tus clientes:</b> configura la conexión en línea (una sola vez). <button class="btn sm" id="go-conn" style="margin-left:8px">Configurar ahora</button></div>` : ''}
+      <div class="kpis">
+        <div class="card kpi"><div class="l">Activas</div><div class="v" style="color:var(--ok)">${n('active') + n('soon')}</div><div class="small muted">${cl.length} clientes en total</div></div>
+        <div class="card kpi"><div class="l">Vencen en ${WARN_DAYS} días</div><div class="v" style="color:var(--warn)">${n('soon')}</div></div>
+        <div class="card kpi"><div class="l">Caducadas</div><div class="v" style="color:var(--err)">${n('expired')}</div></div>
+        <div class="card kpi"><div class="l">Suspendidas</div><div class="v">${n('suspended')}</div><div class="small muted">${n('pending')} sin entregar</div></div>
+        <div class="card kpi"><div class="l">Ingreso mensual activo</div><div class="v" style="font-size:20px">${fmtCOP(mrr)}</div></div>
+        <div class="card kpi"><div class="l">Total cobrado</div><div class="v" style="font-size:20px">${fmtCOP(paid.COP)}</div>${paid.USD ? `<div class="small muted">+ ${fmtUSD(paid.USD)}</div>` : ''}</div>
       </div>
       <div class="card">
         <div class="toolbar"><input class="search" id="q" placeholder="Buscar negocio, licencia, contacto, teléfono…" value="${esc(S.q)}">
-          <select id="flt">${[['', 'Todos'], ['pending', 'Sin entregar'], ['sent', 'Entregadas']].map(([v, l]) => `<option value="${v}" ${S.filter === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+          <select id="flt">${[['', 'Todos los estados'], ['active', 'Activas'], ['soon', `Vencen en ${WARN_DAYS} días`], ['expired', 'Caducadas'], ['suspended', 'Suspendidas'], ['pending', 'Sin entregar']].map(([v, l]) => `<option value="${v}" ${S.filter === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
           <select id="fpl"><option value="">Todos los planes</option><option value="basic" ${S.fplan === 'basic' ? 'selected' : ''}>Básica</option><option value="premium" ${S.fplan === 'premium' ? 'selected' : ''}>Premium</option></select>
           <button class="btn primary" id="new">+ Nuevo cliente</button></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Negocio</th><th>Contacto</th><th>Número de licencia</th><th>Plan</th><th>Estado</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Negocio</th><th>Contacto</th><th>Número de licencia</th><th>Plan</th><th>Vence</th><th>Estado</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
     </main>`;
   const draw = () => {
     const q = norm(S.q).split(/\s+/).filter(Boolean);
     const rows = cl.filter(c => (!S.filter || clientState(c).k === S.filter) && (!S.fplan || c.tier === S.fplan) && q.every(w => norm(`${c.business} ${c.key} ${c.contact} ${c.phone} ${c.email} ${c.city}`).includes(w)))
-      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      .sort((a, b) => (a.expires || '0000').localeCompare(b.expires || '0000'));
     $('#rows').innerHTML = rows.map(c => {
       const s = clientState(c);
+      const main = s.k === 'pending' ? `<button class="btn sm primary" data-a="send" data-id="${c.id}">📲 Entregar</button>`
+        : s.k === 'suspended' ? `<button class="btn sm" data-a="manage" data-id="${c.id}">Reactivar…</button>`
+          : `<button class="btn sm ${['soon', 'expired'].includes(s.k) ? 'primary' : ''}" data-a="renew" data-id="${c.id}">Renovar</button>`;
       return `<tr>
       <td><div class="t1">${esc(c.business)}</div><div class="t2">${esc(c.city || '')}</div></td>
       <td><div>${esc(c.contact || '—')}</div><div class="t2">${esc(c.phone || '')}</div></td>
       <td class="mono" style="font-size:13.5px;font-weight:600;letter-spacing:.05em">${esc(c.key)}</td>
-      <td>${tierBadge(c)}</td><td><span class="badge ${s.cls}">${s.label}</span></td>
-      <td class="acts"><button class="btn sm ${s.k === 'pending' ? 'primary' : ''}" data-a="send" data-id="${c.id}">📲 ${s.k === 'pending' ? 'Entregar licencia' : 'Reenviar'}</button>
+      <td>${tierBadge(c)}<div class="t2">${esc(c.plan || '')}</div></td><td>${fmtDate(c.expires)}</td><td><span class="badge ${s.cls}">${s.label}</span></td>
+      <td class="acts">${main}
+        ${c.phone && ['soon', 'expired'].includes(s.k) ? `<a class="btn sm success" href="${waLink(c.phone, reminderMsg(c))}" target="_blank">Recordar</a>` : ''}
         <button class="btn sm" data-a="manage" data-id="${c.id}">Gestionar</button><button class="btn sm ghost" data-a="edit" data-id="${c.id}">Editar</button></td></tr>`;
-    }).join('') || `<tr><td colspan="6"><div class="empty">${cl.length ? 'Sin resultados' : 'Aún no tienes clientes. Crea el primero con “+ Nuevo cliente”.'}</div></td></tr>`;
+    }).join('') || `<tr><td colspan="7"><div class="empty">${cl.length ? 'Sin resultados' : 'Aún no tienes clientes. Crea el primero con “+ Nuevo cliente”.'}</div></td></tr>`;
   };
-  draw();
+  draw(); pubBadge();
   $('#q').oninput = e => { S.q = e.target.value; draw(); };
   $('#flt').onchange = e => { S.filter = e.target.value; draw(); };
   $('#fpl').onchange = e => { S.fplan = e.target.value; draw(); };
   $('#new').onclick = () => clientForm(null);
   $('#lock').onclick = () => { S.signKey = null; S.sk = null; lockScreen(); };
-  $('#cfg').onclick = settingsModal;
+  $('#cfg').onclick = () => settingsModal();
+  $('#pub').onclick = () => S.db.settings.pubErr === 'sin-conexion' ? settingsModal('conn') : publishState(true);
+  const gc = $('#go-conn'); if (gc) gc.onclick = () => settingsModal('conn');
   $('#tool').onclick = verifyTool;
   $('#rows').onclick = e => {
     const b = e.target.closest('[data-a]'); if (!b) return;
     const c = cl.find(x => x.id === b.dataset.id);
-    ({ send: deliverModal, manage: manageModal, edit: clientForm })[b.dataset.a](c);
+    ({ send: deliverModal, renew: renewModal, manage: manageModal, edit: clientForm })[b.dataset.a](c);
   };
 }
 
@@ -398,30 +463,30 @@ function app() {
 function planCards(sel) {
   const P = S.db.settings.plans;
   return `<div class="plans" id="tiers" style="grid-template-columns:1fr 1fr">${['basic', 'premium'].map(k => `<button type="button" data-tier="${k}" class="${sel === k ? 'on' : ''}" style="text-align:left;padding:14px">
-    <b>${esc(P[k].name)}</b><div style="font-weight:600;margin-top:4px">${fmtCOP(P[k].cop)}</div><div class="small">${fmtUSD(P[k].usd)} · licencia permanente</div>
+    <b>${esc(P[k].name)}</b><div style="font-weight:600;margin-top:4px">${fmtCOP(P[k].cop)} <span style="font-weight:400">/ mes</span></div><div class="small">${fmtUSD(P[k].usd)} / mes</div>
     <div class="small" style="margin-top:6px;opacity:.8">${esc(limText(P[k]))}</div><div style="margin-top:8px;columns:2;column-gap:10px">${featList(P[k])}</div></button>`).join('')}</div>`;
 }
 function clientForm(c) {
   const isNew = !c;
-  c = c ? { ...c } : { id: uid(), business: '', contact: '', phone: '', email: '', city: '', tier: 'basic', notes: '', sales: [], events: [], createdAt: new Date().toISOString() };
+  c = c ? { ...c } : { id: uid(), business: '', contact: '', phone: '', email: '', city: '', tier: 'basic', status: 'active', notes: '', sales: [], events: [], createdAt: new Date().toISOString() };
   let tier = c.tier || 'basic';
   const m = modal(isNew ? 'Nuevo cliente' : 'Editar cliente', `<div class="grid2">
-    <div class="field span2"><label>Plan de la licencia</label>${planCards(tier)}</div>
+    <div class="field span2"><label>Plan de suscripción</label>${planCards(tier)}</div>
     <div class="field span2"><label>Nombre del negocio *</label><input id="f-b" value="${esc(c.business)}" placeholder="Ej. Boutique Luna"></div>
     <div class="field"><label>Persona de contacto</label><input id="f-c" value="${esc(c.contact)}"></div>
     <div class="field"><label>WhatsApp (con código de país)</label><input id="f-p" value="${esc(c.phone)}" placeholder="573001234567"></div>
     <div class="field"><label>Correo</label><input id="f-e" value="${esc(c.email)}"></div>
     <div class="field"><label>Ciudad / dirección</label><input id="f-ci" value="${esc(c.city)}"></div>
-    ${isNew ? '' : `<div class="field span2"><label>Número de licencia</label><input class="mono" style="font-size:16px;letter-spacing:.08em;font-weight:600" value="${esc(c.key)}" readonly><span class="hint">Si cambias el plan se crea un número nuevo (el plan va dentro del número).</span></div>`}
+    ${isNew ? '' : `<div class="field span2"><label>Número de licencia</label><input class="mono" style="font-size:16px;letter-spacing:.08em;font-weight:600" value="${esc(c.key)}" readonly><span class="hint">Si cambias el plan se crea un número nuevo (el plan va dentro del número). El vencimiento se conserva.</span></div>`}
     <div class="field span2"><label>Notas</label><textarea id="f-n" rows="2">${esc(c.notes)}</textarea></div></div>`,
     `${!isNew ? '<button class="btn danger" id="f-del" style="margin-right:auto">Eliminar</button>' : ''}<button class="btn ghost" data-x>Cancelar</button><button class="btn primary" id="f-ok">${isNew ? 'Guardar y entregar licencia' : 'Guardar'}</button>`, 'lg');
   m.$('#tiers').onclick = e => { const b = e.target.closest('[data-tier]'); if (!b) return; tier = b.dataset.tier; m.el.querySelectorAll('#tiers button').forEach(x => x.classList.toggle('on', x === b)); };
-  const del = m.$('#f-del'); if (del) del.onclick = () => { if (confirm(`¿Eliminar a ${c.business}? Su número de licencia (${c.key}) sigue funcionando en su programa; solo se borra de tu lista.`)) { S.db.clients = S.db.clients.filter(x => x.id !== c.id); store.save(); m.close(); app(); } };
+  const del = m.$('#f-del'); if (del) del.onclick = () => { if (confirm(`¿Eliminar a ${c.business} de tu lista?\n\nSu programa seguirá funcionando hasta su fecha de vencimiento (${fmtDate(c.expires)}). Si quieres bloquearlo ya, usa “Suspender cuenta” en Gestionar.`)) { S.db.clients = S.db.clients.filter(x => x.id !== c.id); store.save(); schedulePublish(); m.close(); app(); } };
   m.$('#f-ok').onclick = () => {
     c.business = m.$('#f-b').value.trim(); c.contact = m.$('#f-c').value.trim(); c.phone = m.$('#f-p').value.replace(/\D/g, ''); c.email = m.$('#f-e').value.trim();
     c.city = m.$('#f-ci').value.trim(); c.notes = m.$('#f-n').value.trim();
     if (!c.business) return toast('El nombre del negocio es obligatorio', 'warn');
-    if (isNew) { c.tier = tier; c.key = newKey(tier); logEvent(c, 'Cliente creado', `Licencia ${planOf(c).name} · ${c.key}`); }
+    if (isNew) { c.tier = tier; c.key = newKey(tier); logEvent(c, 'Cliente creado', `Plan ${planOf(c).name} · ${c.key}`); }
     else if (tier !== c.tier) {
       const from = planOf(c).name, old = c.key;
       c.tier = tier; c.key = newKey(tier); c.oldKeys = [...(c.oldKeys || []), old];
@@ -430,33 +495,84 @@ function clientForm(c) {
       toast(`Nuevo número ${planOf(c).name}: ${c.key}. Envíaselo al cliente.`, 'warn');
     }
     saveClient(c); m.close(); app();
-    if (isNew || !c.sentAt) deliverModal(c);
+    if (isNew || (c.upgrade && !c.sentAt)) deliverModal(c);
   };
 }
 
-/* ---------- Entregar la licencia (número + enlace de la app) ---------- */
+/* ---------- Duración y cobro (entregar o renovar) ---------- */
+function payFields(c, from) {
+  return `<div class="field" style="margin-bottom:12px"><label>Duración</label><div class="plans" id="durs" style="grid-template-columns:repeat(4,1fr)">${DURATIONS.map(([n, mo], i) => `<button type="button" data-i="${i}" class="${i === 0 ? 'on' : ''}"><b>${n}</b><span class="small">${mo} ${mo === 1 ? 'mes' : 'meses'}</span></button>`).join('')}</div></div>
+    <div class="grid2" style="margin-bottom:14px"><div class="field"><label>Vence el</label><input id="p-to" type="date" value="${addMonths(from, 1)}"><span class="hint">Desde ${fmtDate(from)}</span></div>
+      <div class="field"><label>Valor cobrado</label><div class="row" style="flex-wrap:nowrap"><input id="p-amt" inputmode="decimal" value="${money(planOf(c).cop)}"><select id="p-cur" style="width:90px"><option>COP</option><option>USD</option></select></div></div></div>`;
+}
+function wirePay(m, c, from) {
+  let dur = DURATIONS[0];
+  const calc = () => { m.$('#p-to').value = addMonths(from, dur[1]); const p = planOf(c); m.$('#p-amt').value = m.$('#p-cur').value === 'USD' ? (p.usd * dur[1]).toFixed(2) : money(p.cop * dur[1]); };
+  m.$('#durs').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; dur = DURATIONS[+b.dataset.i]; m.el.querySelectorAll('#durs button').forEach(x => x.classList.toggle('on', x === b)); calc(); };
+  m.$('#p-cur').onchange = calc;
+  return () => {
+    const usd = m.$('#p-cur').value === 'USD', v = m.$('#p-amt').value;
+    return { dur: dur[0], to: m.$('#p-to').value, amount: (usd ? parseFloat(v.replace(',', '.')) : +v.replace(/[^\d]/g, '')) || 0, currency: usd ? 'USD' : 'COP' };
+  };
+}
+const addSale = (c, pay, kind) => { if (pay.amount) c.sales = [...(c.sales || []), { date: new Date().toISOString(), amount: pay.amount, currency: pay.currency, plan: `${planOf(c).name} · ${pay.dur}`, key: c.key, kind, to: pay.to }]; };
+
+/* ---------- Entregar la licencia (número + enlace del programa) ---------- */
 function deliverModal(c) {
-  const p = planOf(c);
-  const m = modal(`Entregar licencia · ${esc(c.business)}`, `
-    <div style="text-align:center;margin-bottom:16px"><div class="hint">Número de licencia · ${esc(p.name)} permanente</div>
+  if (c.expires && !c.upgrade) {   // ya entregada: solo reenviar el mensaje
+    const m = modal(`Reenviar licencia · ${esc(c.business)}`, `<div class="field"><label>Mensaje para el cliente</label><textarea id="d-msg" rows="16">${esc(licenseMsg(c))}</textarea></div>`,
+      `<button class="btn ghost" data-x>Cerrar</button><button class="btn" id="d-cm">Copiar mensaje</button>${c.phone ? '<button class="btn success" id="d-wa">Enviar por WhatsApp</button>' : ''}`, 'lg');
+    m.$('#d-cm').onclick = () => { navigator.clipboard.writeText(m.$('#d-msg').value); toast('Mensaje copiado'); };
+    const wa = m.$('#d-wa'); if (wa) wa.onclick = () => { window.open(waLink(c.phone, m.$('#d-msg').value), '_blank'); m.close(); };
+    return;
+  }
+  const first = !c.expires, from = today();
+  const m = modal(`${first ? 'Entregar licencia' : 'Nuevo número'} · ${esc(c.business)}`, `
+    <div style="text-align:center;margin-bottom:16px"><div class="hint">Número de licencia · ${esc(planOf(c).name)}</div>
       <div class="mono" id="d-key" style="font-size:28px;font-weight:700;letter-spacing:.1em;margin:6px 0">${esc(c.key)}</div>
       <button class="btn sm" id="d-ck">Copiar número</button></div>
-    ${c.sentAt ? '' : `<div class="grid2" style="margin-bottom:14px"><div class="field"><label>Valor cobrado</label><input id="d-amt" inputmode="decimal" value="${c.upgrade ? '' : money(p.cop)}"></div><div class="field"><label>Moneda</label><select id="d-cur"><option>COP</option><option>USD</option></select></div></div>`}
-    <div class="field"><label>Mensaje para el cliente</label><textarea id="d-msg" rows="15">${esc(licenseMsg(c))}</textarea></div>`,
-    `<button class="btn ghost" data-x>Cerrar</button><button class="btn" id="d-cm">Copiar mensaje</button>${c.phone ? '<button class="btn success" id="d-wa">Enviar por WhatsApp</button>' : '<span class="small muted">Agrega su WhatsApp para enviarlo directo.</span>'}`, 'lg');
-  const cur = m.$('#d-cur'); if (cur) cur.onchange = () => { m.$('#d-amt').value = cur.value === 'USD' ? p.usd : money(p.cop); };
-  const done = () => {
-    if (c.sentAt) return;
-    const a = m.$('#d-amt'), usd = cur && cur.value === 'USD';
-    const amt = a ? (usd ? parseFloat(a.value.replace(',', '.')) : +a.value.replace(/[^\d]/g, '')) || 0 : 0;
-    if (amt) c.sales = [...(c.sales || []), { date: new Date().toISOString(), amount: amt, currency: usd ? 'USD' : 'COP', plan: p.name, key: c.key }];
-    c.sentAt = new Date().toISOString(); delete c.upgrade;
-    logEvent(c, 'Licencia entregada', `${p.name} · ${c.key}${amt ? ' · ' + (usd ? fmtUSD(amt) : fmtCOP(amt)) : ''}`);
-    saveClient(c);
-  };
+    ${first ? payFields(c, from) : ''}
+    <button class="btn primary block" id="d-go">${first ? '✓ Activar suscripción y preparar mensaje' : 'Preparar mensaje'}</button>
+    <div id="d-out" style="margin-top:14px"></div>`, `<button class="btn ghost" data-x>Cerrar</button>`, 'lg');
+  const getPay = first ? wirePay(m, c, from) : null;
   m.$('#d-ck').onclick = () => { navigator.clipboard.writeText(c.key); toast('Número de licencia copiado'); };
-  m.$('#d-cm').onclick = () => { navigator.clipboard.writeText(m.$('#d-msg').value); toast('Mensaje copiado'); done(); m.close(); app(); };
-  const wa = m.$('#d-wa'); if (wa) wa.onclick = () => { window.open(waLink(c.phone, m.$('#d-msg').value), '_blank'); done(); m.close(); app(); };
+  m.$('#d-go').onclick = async () => {
+    if (first) {
+      const pay = getPay();
+      if (!pay.to || pay.to <= today()) return toast('Elige una fecha de vencimiento futura', 'warn');
+      c.expires = pay.to; c.plan = pay.dur; c.status = 'active'; addSale(c, pay, 'activación');
+      logEvent(c, 'Suscripción activada', `${planOf(c).name} · ${pay.dur} hasta ${fmtDate(pay.to)}${pay.amount ? ' · ' + (pay.currency === 'USD' ? fmtUSD(pay.amount) : fmtCOP(pay.amount)) : ''}`);
+    }
+    m.$('#d-go').disabled = true;
+    saveClient(c); clearTimeout(pubTimer); const ok = await publishState();
+    m.$('#d-out').innerHTML = `${ok ? '<div class="callout ok" style="margin-bottom:10px">✓ Publicado en línea: el cliente ya puede activar su número.</div>' : `<div class="callout warn" style="margin-bottom:10px">⚠️ Guardado, pero no se pudo publicar en línea (${esc(S.db.settings.pubErr === 'sin-conexion' ? 'falta configurar la conexión en línea' : S.db.settings.pubErr || '')}). El cliente no podrá activar hasta que se publique.</div>`}
+      <div class="field"><label>Mensaje para el cliente</label><textarea id="d-msg" rows="14">${esc(licenseMsg(c))}</textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="d-cm">Copiar mensaje</button>${c.phone ? '<button class="btn success" id="d-wa">Enviar por WhatsApp</button>' : '<span class="small muted">Agrega su WhatsApp para enviarlo directo.</span>'}</div>`;
+    const done = () => { if (!c.sentAt) { c.sentAt = new Date().toISOString(); delete c.upgrade; logEvent(c, 'Licencia entregada', c.key); saveClient(c); } };
+    m.$('#d-cm').onclick = () => { navigator.clipboard.writeText(m.$('#d-msg').value); toast('Mensaje copiado'); done(); };
+    const wa = m.$('#d-wa'); if (wa) wa.onclick = () => { window.open(waLink(c.phone, m.$('#d-msg').value), '_blank'); done(); m.close(); app(); };
+  };
+}
+
+/* ---------- Renovar ---------- */
+function renewModal(c) {
+  if (c.status === 'suspended') return toast('Esta cuenta está suspendida. Reactívala en Gestionar.', 'warn');
+  const from = c.expires && c.expires >= today() ? c.expires : today();
+  const m = modal(`Renovar · ${esc(c.business)}`, `<p class="small muted" style="margin-top:0">Vence ${c.expires ? 'el <b>' + fmtDate(c.expires) + '</b>' : '—'}. La renovación se suma ${c.expires && c.expires >= today() ? 'a partir de esa fecha' : 'desde hoy'}.</p>
+    ${payFields(c, from)}<button class="btn primary block" id="r-go">✓ Renovar</button><div id="r-out" style="margin-top:14px"></div>`, `<button class="btn ghost" data-x>Cerrar</button>`, 'lg');
+  const getPay = wirePay(m, c, from);
+  m.$('#r-go').onclick = async () => {
+    const pay = getPay();
+    if (!pay.to || pay.to <= today()) return toast('Elige una fecha de vencimiento futura', 'warn');
+    m.$('#r-go').disabled = true;
+    c.expires = pay.to; c.plan = pay.dur; addSale(c, pay, 'renovación');
+    logEvent(c, 'Renovación', `${pay.dur} hasta ${fmtDate(pay.to)}${pay.amount ? ' · ' + (pay.currency === 'USD' ? fmtUSD(pay.amount) : fmtCOP(pay.amount)) : ''}`);
+    saveClient(c); clearTimeout(pubTimer); const ok = await publishState();
+    m.$('#r-out').innerHTML = `${ok ? '<div class="callout ok" style="margin-bottom:10px">✓ Renovada y publicada: su programa la toma solo al conectarse.</div>' : '<div class="callout warn" style="margin-bottom:10px">⚠️ Guardada, pero no se pudo publicar en línea. Revisa Configuración → Conexión en línea.</div>'}
+      <div class="row">${c.phone ? `<a class="btn success" target="_blank" href="${waLink(c.phone, renewMsg(c))}">Avisar por WhatsApp</a>` : ''}<button class="btn" id="r-cm">Copiar mensaje</button></div>`;
+    m.$('#r-cm').onclick = () => { navigator.clipboard.writeText(renewMsg(c)); toast('Mensaje copiado'); };
+    app();
+  };
 }
 
 /* ---------- Gestionar cliente ---------- */
@@ -465,35 +581,47 @@ function manageModal(c) {
   const m = modal(`Gestionar · ${esc(c.business)}`, `
     <div class="grid2" style="margin-bottom:14px">
       <div class="span2"><div class="hint">Número de licencia</div><div class="row" style="gap:8px"><span class="mono" style="font-size:20px;font-weight:700;letter-spacing:.08em">${esc(c.key)}</span>
-        <button class="btn sm" id="m-ck">Copiar</button><button class="btn sm primary" id="m-send">📲 ${c.sentAt ? 'Reenviar' : 'Entregar licencia'}</button></div></div>
+        <button class="btn sm" id="m-ck">Copiar</button><button class="btn sm" id="m-send">📲 ${c.expires ? 'Reenviar' : 'Entregar licencia'}</button></div></div>
       <div><div class="hint">Estado</div><span class="badge ${s.cls}">${s.label}</span></div>
-      <div><div class="hint">Plan</div>${tierBadge(c)} <span class="small muted">· permanente · ${fmtCOP(p.cop)}</span></div>
-      <div><div class="hint">Cliente desde</div>${fmtDate(c.createdAt)}</div>
+      <div><div class="hint">Plan</div>${tierBadge(c)} ${esc(c.plan || '')} <span class="small muted">· ${fmtCOP(p.cop)} / mes</span></div>
+      <div><div class="hint">Vence</div>${fmtDate(c.expires)}</div>
       <div><div class="hint">Contacto</div>${esc(c.contact || '—')} ${c.phone ? `<span class="small muted">· ${esc(c.phone)}</span>` : ''}</div>
     </div>
+    ${c.status === 'suspended' ? `<div class="callout warn" style="margin-bottom:14px">⛔ Cuenta suspendida${c.suspendWhy ? ': ' + esc(c.suspendWhy) : ''}. Su programa muestra “Cuenta suspendida” y no deja entrar.</div>` : ''}
     ${c.notes ? `<div class="callout" style="margin-bottom:14px">${esc(c.notes)}</div>` : ''}
     <div class="row" style="margin-bottom:16px">
+      ${c.status !== 'suspended' && c.expires ? '<button class="btn primary" id="m-renew">Renovar</button>' : ''}
+      ${c.phone && ['soon', 'expired'].includes(s.k) ? `<a class="btn success" target="_blank" href="${waLink(c.phone, reminderMsg(c))}">Recordar por WhatsApp</a>` : ''}
       <button class="btn" id="m-reset" title="Si el cliente olvidó su usuario o contraseña">🔐 Restablecer contraseña</button>
-      <button class="btn ghost" id="m-knew">🔑 Darle un número nuevo</button>
-      <span class="spacer"></span><button class="btn ghost" id="m-edit">Editar / cambiar plan</button>
+      <button class="btn ghost" id="m-edit">Editar / cambiar plan</button>
+      <span class="spacer"></span>
+      ${c.expires ? (c.status === 'suspended' ? '<button class="btn success" id="m-enable">Reactivar cuenta</button>' : '<button class="btn danger" id="m-susp">⛔ Suspender cuenta</button>') : ''}
     </div>
-    <div class="hint" style="margin:0 0 6px">Ventas</div>
-    <table><thead><tr><th>Fecha</th><th>Plan</th><th>Número</th><th class="r">Valor</th></tr></thead><tbody>
-    ${(c.sales || []).slice().reverse().map(v => `<tr><td>${fmtDate(v.date)}</td><td>${esc(v.plan)}</td><td class="mono small">${esc(v.key || '')}</td><td class="r">${v.currency === 'USD' ? fmtUSD(v.amount) : fmtCOP(v.amount)}</td></tr>`).join('') || '<tr><td colspan="4"><div class="empty" style="padding:20px">Sin ventas registradas</div></td></tr>'}
+    <div class="hint" style="margin:0 0 6px">Pagos</div>
+    <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Plan</th><th>Hasta</th><th class="r">Valor</th></tr></thead><tbody>
+    ${(c.sales || []).slice().reverse().map(v => `<tr><td>${fmtDate(v.date)}</td><td>${esc(v.kind || 'venta')}</td><td>${esc(v.plan)}</td><td>${fmtDate(v.to)}</td><td class="r">${v.currency === 'USD' ? fmtUSD(v.amount) : fmtCOP(v.amount)}</td></tr>`).join('') || '<tr><td colspan="5"><div class="empty" style="padding:20px">Sin pagos registrados</div></td></tr>'}
     </tbody></table>
     ${(c.events || []).length ? `<div class="hint" style="margin:16px 0 6px">Historial</div>${c.events.slice().reverse().map(e => `<div class="small" style="padding:4px 0;border-bottom:1px solid var(--line)">${fmtDate(e.date)} · <b>${esc(e.type)}</b> ${esc(e.note || '')}</div>`).join('')}` : ''}`,
     `<button class="btn ghost" data-x>Cerrar</button>`, 'lg');
   const reopen = () => { m.close(); app(); manageModal(S.db.clients.find(x => x.id === c.id)); };
-  m.$('#m-ck').onclick = () => { navigator.clipboard.writeText(c.key); toast('Número de licencia copiado'); };
-  m.$('#m-send').onclick = () => { m.close(); deliverModal(c); };
-  m.$('#m-edit').onclick = () => { m.close(); clientForm(c); };
-  m.$('#m-reset').onclick = () => { m.close(); resetModal(c); };
-  m.$('#m-knew').onclick = () => {
-    if (!confirm(`¿Darle a ${c.business} un número de licencia NUEVO (${p.name})?\n\nÚsalo si perdió el número o lo compartió. El anterior (${c.key}) sigue funcionando en los equipos donde ya está activado.`)) return;
-    const old = c.key; c.key = newKey(c.tier); c.oldKeys = [...(c.oldKeys || []), old]; delete c.sentAt;
-    logEvent(c, 'Número de licencia nuevo', `${old} → ${c.key}`); saveClient(c);
-    toast(`Nuevo número: ${c.key}`); reopen();
-  };
+  const on = (id, fn) => { const b = m.$(id); if (b) b.onclick = fn; };
+  on('#m-ck', () => { navigator.clipboard.writeText(c.key); toast('Número de licencia copiado'); });
+  on('#m-send', () => { m.close(); deliverModal(c); });
+  on('#m-renew', () => { m.close(); renewModal(c); });
+  on('#m-edit', () => { m.close(); clientForm(c); });
+  on('#m-reset', () => { m.close(); resetModal(c); });
+  on('#m-susp', async () => {
+    if (!confirm(`¿Suspender la cuenta de ${c.business}?\n\nSu programa se bloqueará y mostrará “Cuenta suspendida” al abrirlo o, si está abierto, en menos de 1 hora (necesita internet). Sus datos no se borran y puedes reactivarla cuando quieras.`)) return;
+    c.suspendWhy = prompt('Motivo (opcional, solo lo ves tú):') || '';
+    c.status = 'suspended'; c.suspendedAt = new Date().toISOString(); logEvent(c, 'Cuenta suspendida', c.suspendWhy); saveClient(c);
+    clearTimeout(pubTimer); const ok = await publishState();
+    toast(ok ? 'Cuenta suspendida y publicada' : 'Suspendida, pero no se pudo publicar en línea: revisa la conexión', ok ? 'warn' : 'err'); reopen();
+  });
+  on('#m-enable', async () => {
+    c.status = 'active'; delete c.suspendWhy; logEvent(c, 'Cuenta reactivada'); saveClient(c);
+    clearTimeout(pubTimer); const ok = await publishState();
+    toast(ok ? 'Cuenta reactivada: su programa vuelve a funcionar al verificar' : 'Reactivada, pero no se pudo publicar en línea', ok ? 'ok' : 'err'); reopen();
+  });
 }
 
 /* ---------- Restablecer usuario y contraseña (código firmado que el cliente pega en la app) ---------- */
@@ -528,7 +656,7 @@ function verifyTool() {
     const v = m.$('#v-c').value.trim();
     if (!/^NOIR1\./i.test(v.replace(/\s+/g, ''))) {
       const r = LicShort.check(S.sk, v), c = r && S.db.clients.find(x => x.key === r.key || (x.oldKeys || []).includes(r.key));
-      m.$('#v-out').innerHTML = r ? `<div class="callout ok">✓ Número válido creado por tu panel · <b>${esc(S.db.settings.plans[r.tier].name)}</b> permanente</div><div class="small" style="margin-top:8px">${c ? `Cliente: <b>${esc(c.business)}</b>${c.key !== r.key ? ' (número anterior)' : ''}` : 'No está en tu lista de clientes.'}</div>`
+      m.$('#v-out').innerHTML = r ? `<div class="callout ok">✓ Número válido creado por tu panel · <b>${esc(S.db.settings.plans[r.tier].name)}</b></div><div class="small" style="margin-top:8px">${c ? `Cliente: <b>${esc(c.business)}</b>${c.key !== r.key ? ' (número anterior)' : ''} · ${clientState(c).label} · vence ${fmtDate(c.expires)}` : 'No está en tu lista de clientes.'}</div>`
         : '<div class="callout warn">✗ Ese número no es válido (mal escrito o no lo creó tu panel).</div>';
       return;
     }
@@ -536,25 +664,50 @@ function verifyTool() {
       const { payload: p, ok } = await decodeCode(v);
       m.$('#v-out').innerHTML = `<div class="callout ${ok ? 'ok' : 'warn'}">${ok ? '✓ Firma válida (generado por tu panel)' : '✗ Firma inválida: este código no es tuyo o fue modificado'}</div>
         <div class="grid2" style="margin-top:12px"><div><div class="hint">Negocio</div>${esc(p.n || '—')}</div><div><div class="hint">Licencia</div><span class="mono">${esc(p.k || '—')}</span></div>
-        <div><div class="hint">Tipo</div>${esc(p.p || p.type || '—')}</div><div><div class="hint">Emitido</div>${fmtDate(p.t)}</div><div><div class="hint">Usuario</div>${p.u ? esc(p.u) : '—'}</div></div>`;
+        <div><div class="hint">Tipo</div>${esc(p.p || p.type || '—')}</div><div><div class="hint">Emitido</div>${fmtDate(typeof p.t === 'number' ? new Date(p.t).toISOString() : p.t)}</div><div><div class="hint">Usuario</div>${p.u ? esc(p.u) : '—'}</div></div>`;
     } catch (e) { m.$('#v-out').innerHTML = `<div class="callout warn">${esc(e.message)}</div>`; }
   };
 }
-function settingsModal() {
+const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new?name=NOIR%20Panel%20de%20Licencias&description=Publica%20vencimientos%20y%20suspensiones%20de%20NOIR%20STORE&target_name=noirstudio-web&expires_in=none&contents=write';
+const LEGAL_URL = 'https://noirstudio-web.github.io/noir-store/legal/';
+function settingsModal(tab = 'gen') {
   const s = S.db.settings, P = s.plans;
   const planEditor = k => `<div class="card" style="padding:14px"><div class="field" style="margin-bottom:10px"><label>Nombre</label><input data-p="${k}" data-f="name" value="${esc(P[k].name)}"></div>
-    <div class="grid2" style="gap:10px"><div class="field"><label>Precio de la licencia (COP)</label><input data-p="${k}" data-f="cop" inputmode="numeric" value="${P[k].cop}"></div><div class="field"><label>Precio (USD)</label><input data-p="${k}" data-f="usd" inputmode="decimal" value="${P[k].usd}"></div></div>
+    <div class="grid2" style="gap:10px"><div class="field"><label>Precio mensual (COP)</label><input data-p="${k}" data-f="cop" inputmode="numeric" value="${P[k].cop}"></div><div class="field"><label>Precio mensual (USD)</label><input data-p="${k}" data-f="usd" inputmode="decimal" value="${P[k].usd}"></div></div>
     <div class="hint" style="margin:12px 0 6px">Incluye (fijo en el programa): ${esc(limText(P[k]))}</div><div style="columns:2;column-gap:10px">${featList(P[k])}</div></div>`;
-  const m = modal('Configuración del panel', `<div class="tabs"><button class="tab on" data-t="gen">General</button><button class="tab" data-t="plans">Planes y precios</button></div>
-    <div data-pane="gen"><div class="grid2">
+  const tabs = [['gen', 'General'], ['plans', 'Planes y precios'], ['conn', 'Conexión en línea'], ['legal', 'Términos y privacidad']];
+  const m = modal('Configuración del panel', `<div class="tabs">${tabs.map(([k, l]) => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${l}</button>`).join('')}</div>
+    <div data-pane="gen" ${tab === 'gen' ? '' : 'style="display:none"'}><div class="grid2">
     <div class="field"><label>Tu nombre / marca</label><input id="s-v" value="${esc(s.vendor)}"></div>
     <div class="field"><label>Tu WhatsApp</label><input id="s-w" value="${esc(s.whatsapp)}" placeholder="573001234567"></div>
     <div class="field span2"><label>Enlace de descarga del programa (Windows)</label><input id="s-apk" value="${esc(appUrlOf())}"><span class="hint">Va en el mensaje que recibe cada cliente.</span></div>
     <div class="field span2"><label>Respaldo de clientes</label><div class="row"><button class="btn" id="s-exp">Descargar respaldo</button><button class="btn" id="s-imp">Restaurar respaldo</button></div><span class="hint">Los datos del panel viven en este navegador: descarga respaldos con frecuencia.</span></div>
     <div class="field span2"><label>Cambiar usuario y contraseña del panel</label><div class="row" style="flex-wrap:nowrap"><input id="s-p1" type="password" placeholder="Contraseña actual"><input id="s-u2" placeholder="Usuario" value="${esc(getSlot().user || 'Richy')}"><input id="s-p2" type="password" placeholder="Nueva contraseña (mín. 6)"><button class="btn" id="s-pw">Cambiar</button></div><span class="hint">Deja la nueva contraseña vacía para cambiar solo el usuario.</span></div></div></div>
-    <div data-pane="plans" style="display:none"><div class="grid2">${planEditor('basic')}${planEditor('premium')}</div></div>`,
+    <div data-pane="plans" ${tab === 'plans' ? '' : 'style="display:none"'}><div class="grid2">${planEditor('basic')}${planEditor('premium')}</div></div>
+    <div data-pane="conn" ${tab === 'conn' ? '' : 'style="display:none"'}>
+      <p class="small" style="margin-top:0;color:var(--text2)">Con esta conexión tu panel publica en internet (cifrado y firmado) <b>cuándo vence</b> cada suscripción y <b>qué cuentas están suspendidas</b>. El programa de cada cliente lo revisa al abrir y cada hora: así se bloquea al suspender y se desbloquea al renovar, sin que el cliente haga nada.</p>
+      <div class="callout ${ghToken() ? (s.pubErr ? 'warn' : 'ok') : 'warn'}" style="margin-bottom:14px">${ghToken() ? (s.pubErr ? '⚠️ Conectado, pero el último intento falló: ' + esc(s.pubErr) : `✓ Conectado · última publicación ${s.pubAt ? new Date(s.pubAt).toLocaleString('es-CO') : '—'}`) : '⚠️ Aún no está configurada.'}</div>
+      <ol class="small" style="color:var(--text2);line-height:1.8;padding-left:18px;margin-top:0">
+        <li>Abre <a href="${TOKEN_URL}" target="_blank" style="color:var(--info)">este enlace de GitHub</a> (entra con la cuenta <b>noirstudio-web</b>).</li>
+        <li>En <b>Repository access</b> elige <b>Only select repositories</b> → <b>noir-activaciones</b>.</li>
+        <li>En <b>Permissions → Repository permissions → Contents</b> elige <b>Read and write</b>.</li>
+        <li>En <b>Expiration</b> elige la más larga (o <b>No expiration</b> si aparece). Pulsa <b>Generate token</b> y copia el código (empieza con <span class="mono">github_pat_</span>).</li>
+        <li>Pégalo aquí abajo y pulsa <b>Guardar y probar</b>.</li></ol>
+      <div class="field"><label>Permiso de GitHub</label><div class="row" style="flex-wrap:nowrap"><input id="s-tok" type="password" placeholder="github_pat_…" value="${esc(ghToken())}" autocomplete="off"><button class="btn primary" id="s-tok-ok">Guardar y probar</button>${ghToken() ? '<button class="btn ghost" id="s-tok-rm">Quitar</button>' : ''}</div>
+        <span class="hint">Se guarda solo en este navegador. Solo sirve para el repositorio noir-activaciones.</span></div></div>
+    <div data-pane="legal" ${tab === 'legal' ? '' : 'style="display:none"'}>
+      <p class="small" style="margin-top:0;color:var(--text2)">Tus clientes aceptan estos documentos al activar el programa y los pueden leer en Configuración → Términos y privacidad. Están publicados aquí:</p>
+      <div class="row"><a class="btn" target="_blank" href="${LEGAL_URL}terminos.html">📄 Términos y condiciones</a><a class="btn" target="_blank" href="${LEGAL_URL}privacidad.html">🔒 Política de privacidad</a></div>
+      <p class="small muted">Puedes copiar el enlace para enviarlo por WhatsApp. Te recomendamos que un abogado los revise antes de usarlos comercialmente.</p></div>`,
     `<button class="btn ghost" data-x>Cerrar</button><button class="btn primary" id="s-ok">Guardar</button>`, 'lg');
   m.el.querySelectorAll('[data-t]').forEach(t => t.onclick = () => { m.el.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === t)); m.el.querySelectorAll('[data-pane]').forEach(p => p.style.display = p.dataset.pane === t.dataset.t ? '' : 'none'); });
+  m.$('#s-tok-ok').onclick = async () => {
+    const v = m.$('#s-tok').value.trim().replace(/^["'`*]+|["'`*]+$/g, '');
+    if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(v)) return toast('Eso no parece un permiso de GitHub: debe empezar con github_pat_', 'warn');
+    localStorage.setItem(GH_SLOT, v); delete s.pubErr; store.save();
+    if (await publishState(true)) { m.close(); app(); }
+  };
+  const rm = m.$('#s-tok-rm'); if (rm) rm.onclick = () => { localStorage.removeItem(GH_SLOT); s.pubErr = 'sin-conexion'; store.save(); toast('Conexión quitada'); m.close(); app(); };
   m.$('#s-ok').onclick = () => {
     s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.apkUrl = m.$('#s-apk').value.trim() || DEFAULT_APP_URL;
     for (const k of ['basic', 'premium']) {
@@ -565,7 +718,7 @@ function settingsModal() {
     store.save(); toast('Configuración guardada'); m.close(); app();
   };
   m.$('#s-exp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.db, null, 2)], { type: 'application/json' })); a.download = `noir-licencias-clientes-${today()}.json`; a.click(); };
-  m.$('#s-imp').onclick = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = async () => { try { const d = JSON.parse(await i.files[0].text()); if (!Array.isArray(d.clients)) throw 0; if (!confirm(`¿Reemplazar tus ${S.db.clients.length} clientes por los ${d.clients.length} del respaldo?`)) return; d.issuedKeys = [...new Set([...(d.issuedKeys || []), ...(S.db.issuedKeys || [])])]; S.db = d; store.save(); m.close(); app(); toast('Respaldo restaurado'); } catch (e) { toast('Archivo inválido', 'err'); } }; i.click(); };
+  m.$('#s-imp').onclick = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = async () => { try { const d = JSON.parse(await i.files[0].text()); if (!Array.isArray(d.clients)) throw 0; if (!confirm(`¿Reemplazar tus ${S.db.clients.length} clientes por los ${d.clients.length} del respaldo?`)) return; d.issuedKeys = [...new Set([...(d.issuedKeys || []), ...(S.db.issuedKeys || [])])]; S.db = d; store.save(); m.close(); app(); schedulePublish(); toast('Respaldo restaurado'); } catch (e) { toast('Archivo inválido', 'err'); } }; i.click(); };
   m.$('#s-pw').onclick = async () => {
     const p1 = m.$('#s-p1').value, p2 = m.$('#s-p2').value, u2 = m.$('#s-u2').value.trim();
     if (u2.length < 3) return toast('El usuario debe tener al menos 3 caracteres', 'warn');
