@@ -305,11 +305,11 @@ function newKey(tier) {
   S.db.issuedKeys.push(k); store.save();
   return k;
 }
-const DEFAULT_APK_URL = 'https://github.com/noirstudio-web/noir-store/releases/latest/download/NOIR-STORE.apk';
-const apkUrlOf = () => S.db.settings.apkUrl || DEFAULT_APK_URL;
+const DEFAULT_APP_URL = 'https://github.com/noirstudio-web/noir-store/releases/latest/download/NOIR-STORE-Instalador.exe';
+const appUrlOf = () => (S.db.settings.apkUrl && !/\.apk$/i.test(S.db.settings.apkUrl) ? S.db.settings.apkUrl : DEFAULT_APP_URL);
 const licenseMsg = c => c.upgrade
-  ? `Hola ${c.contact || c.business} 👋\n\nTu licencia de *NOIR STORE* para *${c.business}* ahora es *${planOf(c).name}* · permanente.\n\n🔑 Tu nuevo número de licencia:\n${c.key}\n\nEn la app ve a *Configuración → Licencia*, escríbelo en “Cambiar a otro plan” y listo. Tus datos se conservan.\n\n${S.db.settings.vendor}`
-  : `Hola ${c.contact || c.business} 👋\n\nGracias por tu compra. Ya tienes *NOIR STORE* para *${c.business}*.\nLicencia: *${planOf(c).name}* · permanente (es tuya, no se vence)\n${c.tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n📲 1. Descarga la app en tu celular o tablet Android:\n${apkUrlOf()}\n(Si el teléfono lo pregunta, permite instalar apps de este origen.)\n\n🔑 2. Ábrela y escribe tu número de licencia:\n${c.key}\n\n👤 3. Crea tu usuario y contraseña, y listo.\n\n💾 Tu información queda guardada en tu equipo: descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`;
+  ? `Hola ${c.contact || c.business} 👋\n\nTu licencia de *NOIR STORE* para *${c.business}* ahora es *${planOf(c).name}* · permanente.\n\n🔑 Tu nuevo número de licencia:\n${c.key}\n\nEn el programa ve a *Configuración → Licencia*, escríbelo en “Cambiar a otro plan” y listo. Tus datos se conservan.\n\n${S.db.settings.vendor}`
+  : `Hola ${c.contact || c.business} 👋\n\nGracias por tu compra. Ya tienes *NOIR STORE* para *${c.business}*.\nLicencia: *${planOf(c).name}* · permanente (es tuya, no se vence)\n${c.tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n💻 1. Descarga el programa en tu computador (Windows):\n${appUrlOf()}\nÁbrelo e instálalo. Si Windows muestra “Windows protegió tu PC”, toca *Más información → Ejecutar de todas formas*.\n\n🔑 2. Abre *NOIR STORE* (queda en el escritorio) y escribe tu número de licencia:\n${c.key}\n\n👤 3. Crea tu usuario y contraseña, y listo.\n\n💾 Tu información queda guardada en tu equipo: descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`;
 function migratePanel() {
   const d = S.db;
   d.settings.plans = Object.assign(DEFAULT_PLANS(), d.settings.plans || {});
@@ -416,7 +416,7 @@ function clientForm(c) {
     <div class="field span2"><label>Notas</label><textarea id="f-n" rows="2">${esc(c.notes)}</textarea></div></div>`,
     `${!isNew ? '<button class="btn danger" id="f-del" style="margin-right:auto">Eliminar</button>' : ''}<button class="btn ghost" data-x>Cancelar</button><button class="btn primary" id="f-ok">${isNew ? 'Guardar y entregar licencia' : 'Guardar'}</button>`, 'lg');
   m.$('#tiers').onclick = e => { const b = e.target.closest('[data-tier]'); if (!b) return; tier = b.dataset.tier; m.el.querySelectorAll('#tiers button').forEach(x => x.classList.toggle('on', x === b)); };
-  const del = m.$('#f-del'); if (del) del.onclick = () => { if (confirm(`¿Eliminar a ${c.business}? Su número de licencia (${c.key}) sigue funcionando en su app; solo se borra de tu lista.`)) { S.db.clients = S.db.clients.filter(x => x.id !== c.id); store.save(); m.close(); app(); } };
+  const del = m.$('#f-del'); if (del) del.onclick = () => { if (confirm(`¿Eliminar a ${c.business}? Su número de licencia (${c.key}) sigue funcionando en su programa; solo se borra de tu lista.`)) { S.db.clients = S.db.clients.filter(x => x.id !== c.id); store.save(); m.close(); app(); } };
   m.$('#f-ok').onclick = () => {
     c.business = m.$('#f-b').value.trim(); c.contact = m.$('#f-c').value.trim(); c.phone = m.$('#f-p').value.replace(/\D/g, ''); c.email = m.$('#f-e').value.trim();
     c.city = m.$('#f-ci').value.trim(); c.notes = m.$('#f-n').value.trim();
@@ -499,7 +499,7 @@ function manageModal(c) {
 /* ---------- Restablecer usuario y contraseña (código firmado que el cliente pega en la app) ---------- */
 function resetModal(c) {
   const m = modal(`Restablecer contraseña · ${esc(c.business)}`, `
-    <p class="small muted" style="margin-top:0">Escribe el usuario y la contraseña nuevos del administrador. Se genera un código que el cliente pega en la app, en la pantalla de ingreso → <b>¿Olvidaste tu contraseña?</b></p>
+    <p class="small muted" style="margin-top:0">Escribe el usuario y la contraseña nuevos del administrador. Se genera un código que el cliente pega en el programa, en la pantalla de ingreso → <b>¿Olvidaste tu contraseña?</b></p>
     <div class="grid2"><div class="field"><label>Usuario</label><input id="r-u" value="${esc(c.username || '')}" autocapitalize="off" placeholder="ej. maria"></div>
     <div class="field"><label>Contraseña nueva</label><div class="row" style="flex-wrap:nowrap"><input id="r-p" value="${esc(genPassword())}"><button class="btn" id="r-gen" type="button">Generar</button></div></div></div>
     <div id="r-out" style="margin-top:14px"></div>`,
@@ -512,7 +512,7 @@ function resetModal(c) {
     const s = randHex(12);
     const code = await makeCode({ v: 2, id: uid(), k: c.key, n: c.business, p: 'Restablecer acceso', tier: c.tier, e: '2099-12-31', t: today(), u, s, h: hashPass(pw, s), an: c.contact || 'Administrador', rs: 1 });
     c.username = u; logEvent(c, 'Contraseña restablecida', `Usuario ${u}`); saveClient(c);
-    const msg = `Hola ${c.contact || c.business} 👋\n\nPara volver a entrar a *NOIR STORE*:\n1. Abre la app y toca *¿Olvidaste tu contraseña?*\n2. Pega este código completo:\n\n${code}\n\n3. Entra con:\nUsuario:\n${u}\nContraseña:\n${pw}\n\n(Luego puedes cambiarla en Configuración → Mi cuenta)\n\n${S.db.settings.vendor}`;
+    const msg = `Hola ${c.contact || c.business} 👋\n\nPara volver a entrar a *NOIR STORE*:\n1. Abre NOIR STORE y toca *¿Olvidaste tu contraseña?*\n2. Pega este código completo:\n\n${code}\n\n3. Entra con:\nUsuario:\n${u}\nContraseña:\n${pw}\n\n(Luego puedes cambiarla en Configuración → Mi cuenta)\n\n${S.db.settings.vendor}`;
     m.$('#r-out').innerHTML = `<div class="callout ok" style="margin-bottom:10px">✓ Código listo</div><div class="code">${esc(code)}</div>
       <div class="row" style="margin-top:10px"><button class="btn" id="r-cc">Copiar código</button><button class="btn" id="r-cm">Copiar mensaje</button>${c.phone ? `<a class="btn success" target="_blank" href="${waLink(c.phone, msg)}">Enviar por WhatsApp</a>` : ''}</div>`;
     m.$('#r-cc').onclick = () => { navigator.clipboard.writeText(code); toast('Código copiado'); };
@@ -544,19 +544,19 @@ function settingsModal() {
   const s = S.db.settings, P = s.plans;
   const planEditor = k => `<div class="card" style="padding:14px"><div class="field" style="margin-bottom:10px"><label>Nombre</label><input data-p="${k}" data-f="name" value="${esc(P[k].name)}"></div>
     <div class="grid2" style="gap:10px"><div class="field"><label>Precio de la licencia (COP)</label><input data-p="${k}" data-f="cop" inputmode="numeric" value="${P[k].cop}"></div><div class="field"><label>Precio (USD)</label><input data-p="${k}" data-f="usd" inputmode="decimal" value="${P[k].usd}"></div></div>
-    <div class="hint" style="margin:12px 0 6px">Incluye (fijo en la app): ${esc(limText(P[k]))}</div><div style="columns:2;column-gap:10px">${featList(P[k])}</div></div>`;
+    <div class="hint" style="margin:12px 0 6px">Incluye (fijo en el programa): ${esc(limText(P[k]))}</div><div style="columns:2;column-gap:10px">${featList(P[k])}</div></div>`;
   const m = modal('Configuración del panel', `<div class="tabs"><button class="tab on" data-t="gen">General</button><button class="tab" data-t="plans">Planes y precios</button></div>
     <div data-pane="gen"><div class="grid2">
     <div class="field"><label>Tu nombre / marca</label><input id="s-v" value="${esc(s.vendor)}"></div>
     <div class="field"><label>Tu WhatsApp</label><input id="s-w" value="${esc(s.whatsapp)}" placeholder="573001234567"></div>
-    <div class="field span2"><label>Enlace de descarga de la app (APK)</label><input id="s-apk" value="${esc(apkUrlOf())}"><span class="hint">Va en el mensaje que recibe cada cliente.</span></div>
+    <div class="field span2"><label>Enlace de descarga del programa (Windows)</label><input id="s-apk" value="${esc(appUrlOf())}"><span class="hint">Va en el mensaje que recibe cada cliente.</span></div>
     <div class="field span2"><label>Respaldo de clientes</label><div class="row"><button class="btn" id="s-exp">Descargar respaldo</button><button class="btn" id="s-imp">Restaurar respaldo</button></div><span class="hint">Los datos del panel viven en este navegador: descarga respaldos con frecuencia.</span></div>
     <div class="field span2"><label>Cambiar usuario y contraseña del panel</label><div class="row" style="flex-wrap:nowrap"><input id="s-p1" type="password" placeholder="Contraseña actual"><input id="s-u2" placeholder="Usuario" value="${esc(getSlot().user || 'Richy')}"><input id="s-p2" type="password" placeholder="Nueva contraseña (mín. 6)"><button class="btn" id="s-pw">Cambiar</button></div><span class="hint">Deja la nueva contraseña vacía para cambiar solo el usuario.</span></div></div></div>
     <div data-pane="plans" style="display:none"><div class="grid2">${planEditor('basic')}${planEditor('premium')}</div></div>`,
     `<button class="btn ghost" data-x>Cerrar</button><button class="btn primary" id="s-ok">Guardar</button>`, 'lg');
   m.el.querySelectorAll('[data-t]').forEach(t => t.onclick = () => { m.el.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === t)); m.el.querySelectorAll('[data-pane]').forEach(p => p.style.display = p.dataset.pane === t.dataset.t ? '' : 'none'); });
   m.$('#s-ok').onclick = () => {
-    s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.apkUrl = m.$('#s-apk').value.trim() || DEFAULT_APK_URL;
+    s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.apkUrl = m.$('#s-apk').value.trim() || DEFAULT_APP_URL;
     for (const k of ['basic', 'premium']) {
       const g = f => m.el.querySelector(`[data-p="${k}"][data-f="${f}"]`).value;
       P[k].name = g('name').trim() || P[k].name;
