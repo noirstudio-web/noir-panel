@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOIR · Panel de Licencias</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080a;--bg2:#0d0d10;--s1:#121216;--s2:#17171c;--s3:#1e1e24;--line:#24242b;--line2:#30303a;--text:#eceef2;--text2:#b4b7bf;--muted:#7d818b;
+--ok:#3ecf8e;--okbg:rgba(62,207,142,.12);--warn:#f2b84b;--warnbg:rgba(242,184,75,.12);--err:#ff6161;--errbg:rgba(255,97,97,.12);--info:#79a8ff;--infobg:rgba(121,168,255,.12);
+--chrome:linear-gradient(180deg,#fff 0%,#dfe1e6 38%,#8e919a 50%,#e6e8ec 60%,#b5b8c0 100%);--display:"Outfit","Inter","Segoe UI",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Inter","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#8e919a;box-shadow:0 0 0 3px rgba(217,219,224,.08)}
+textarea{resize:vertical}input[type=checkbox]{width:16px;height:16px;accent-color:#d9dbe0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 15px;border-radius:9px;border:1px solid var(--line2);background:var(--s2);font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn:hover{background:var(--s3)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:#eceef2;color:#0a0a0c;border-color:#eceef2;font-weight:600}.btn.primary:hover{background:#fff}
+.btn.chrome{background:var(--chrome);color:#0a0a0c;border:0;font-weight:700}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text2)}.btn.ghost:hover{background:var(--s2)}
+.btn.success{background:var(--okbg);border-color:rgba(62,207,142,.35);color:#6ee0ac}.btn.danger{background:var(--errbg);border-color:rgba(255,97,97,.3);color:#ff8a8a}
+.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:7px}.btn.lg{padding:13px 20px;font-size:15px}.btn.block{width:100%}
+.field{display:flex;flex-direction:column;gap:6px}.field>label{font-size:12px;color:var(--text2);font-weight:500}.hint{font-size:11.5px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.span2{grid-column:1/-1}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spacer{flex:1}
+.check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--text2)}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;background:var(--s3);color:var(--text2);white-space:nowrap}
+.badge.ok{background:var(--okbg);color:var(--ok)}.badge.warn{background:var(--warnbg);color:var(--warn)}.badge.err{background:var(--errbg);color:var(--err)}.badge.info{background:var(--infobg);color:var(--info)}
+.muted{color:var(--muted)}.small{font-size:12px}.mono{font-family:Consolas,monospace}
+.lock{min-height:100vh;display:grid;place-items:center;padding:30px;background:radial-gradient(ellipse at 50% 20%,#17171c,var(--bg) 60%)}
+.lock-box{width:100%;max-width:400px;text-align:center}.lock-box img{width:70px;margin-bottom:16px}
+.lock-box h1{font:600 24px var(--display);margin:0 0 6px}.lock-box p{color:var(--muted);margin:0 0 22px}.lock-box .field{text-align:left;margin-bottom:12px}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:14px 28px;background:rgba(8,8,10,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header img{height:30px}header .tag{font-size:10.5px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;border-left:1px solid var(--line2);padding-left:14px}
+main{padding:24px 28px 60px;max-width:1400px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:16px 18px}.kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font:600 25px var(--display);margin-top:6px}
+.toolbar{display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}.toolbar input,.toolbar select{width:auto}
+.search{flex:1;min-width:220px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:11px 14px;border-bottom:1px solid #1b1b21;vertical-align:middle}tr:hover td{background:#15151a}td.r,th.r{text-align:right}.acts{text-align:right;white-space:nowrap}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+.t1{font-weight:600}.t2{font-size:12px;color:var(--muted)}
+.back{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.66);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px}
+.modal{width:100%;max-width:600px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line2);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.modal.lg{max-width:820px}.mh{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}.mh h3{margin:0;font:600 17px var(--display);flex:1}
+.mb{padding:20px;overflow:auto}.mf{display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;border-radius:8px}.x:hover{background:var(--s2);color:var(--text)}
+.plans{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.plans button{padding:12px 6px;border-radius:10px;border:1px solid var(--line2);background:var(--s2);cursor:pointer;color:var(--text2)}
+.plans button b{display:block;font:600 16px var(--display);color:var(--text)}.plans button.on{background:#eceef2;color:#333;border-color:#eceef2}.plans button.on b{color:#0a0a0c}
+.code{font-family:Consolas,monospace;font-size:12px;word-break:break-all;background:var(--bg);border:1px dashed var(--line2);border-radius:10px;padding:12px;max-height:160px;overflow:auto;user-select:all}
+.callout{padding:12px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--line2);color:var(--text2);font-size:13px}
+.callout.warn{background:var(--warnbg);border-color:rgba(242,184,75,.3);color:#f5ca78}.callout.ok{background:var(--okbg);border-color:rgba(62,207,142,.3);color:#7ee6b6}
+.toasts{position:fixed;right:22px;bottom:22px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:10px;background:var(--s2);border:1px solid var(--line2);border-left:3px solid var(--ok);min-width:240px;box-shadow:0 10px 30px rgba(0,0,0,.5)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line)}.tab{padding:10px 16px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-weight:500;margin-bottom:-1px}.tab.on{color:#fff;border-bottom-color:#e6e8ec}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.plans{grid-template-columns:repeat(3,1fr)}main{padding:18px 14px}header{padding:12px 14px}.hide-m{display:none}}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toasts" id="toasts"></div>
+<script>
+'use strict';
+/* =====================================================================
+   NOIR · Panel de Licencias (PRIVADO — no lo entregues a clientes)
+   Firma los códigos de activación con tu clave privada (ECDSA P-256).
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = n => String(n).padStart(2, '0');
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => dayKey(new Date());
+const parseD = s => new Date(s + 'T00:00:00');
+const fmtDate = s => { if (!s) return '—'; const d = parseD(s.slice(0, 10)); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`; };
+const addDays = (s, n) => { const d = parseD(s); d.setDate(d.getDate() + n); return dayKey(d); };
+const addMonths = (s, n) => { const d = parseD(s); const day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return dayKey(d); };
+const daysTo = s => Math.round((parseD(s) - parseD(today())) / 86400000);
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function toast(msg, type = 'ok') { const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = msg; $('#toasts').appendChild(t); setTimeout(() => t.remove(), 3500); }
+const money = n => (+n || 0).toLocaleString('es-CO');
+
+/* ---------- SHA-256 (mismo algoritmo que NOIR STORE) ---------- */
+const SHA = (() => { const p = []; for (let n = 2; p.length < 64; n++) { let ok = true; for (let d = 2; d * d <= n; d++) if (n % d === 0) { ok = false; break; } if (ok) p.push(n); } const f = x => Math.floor((x - Math.floor(x)) * 2 ** 32) >>> 0; return { K: p.map(x => f(Math.cbrt(x))), H: p.slice(0, 8).map(x => f(Math.sqrt(x))) }; })();
+function sha256(str) {
+  const b = new TextEncoder().encode(String(str)), len = b.length, total = ((len + 9 + 63) >> 6) << 6;
+  const m = new Uint8Array(total); m.set(b); m[len] = 0x80; const dv = new DataView(m.buffer);
+  dv.setUint32(total - 4, (len * 8) >>> 0); dv.setUint32(total - 8, Math.floor(len * 8 / 2 ** 32));
+  const r = (x, n) => (x >>> n) | (x << (32 - n)); const W = new Uint32Array(64), H = SHA.H.slice(), K = SHA.K;
+  for (let o = 0; o < total; o += 64) {
+    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(o + i * 4);
+    for (let i = 16; i < 64; i++) { const x = W[i - 15], y = W[i - 2]; W[i] = (W[i - 16] + (r(x, 7) ^ r(x, 18) ^ (x >>> 3)) + W[i - 7] + (r(y, 17) ^ r(y, 19) ^ (y >>> 10))) >>> 0; }
+    let [a, bb, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) { const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) >>> 0; const t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & bb) ^ (a & c) ^ (bb & c))) >>> 0; h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0; }
+    [a, bb, c, d, e, f, g, h].forEach((v, i) => H[i] = (H[i] + v) >>> 0);
+  }
+  return H.map(x => x.toString(16).padStart(8, '0')).join('');
+}
+function hashPass(pw, salt) { let h = String(pw); for (let i = 0; i < 1500; i++) h = sha256(salt + ':' + h); return h; }
+const randHex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');
+function genPassword() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(8))].map(b => a[b % a.length]).join(''); }
+
+/* ---------- base64url ---------- */
+const b64u = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64uDec = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+
+/* ---------- Almacenamiento ---------- */
+const KEY_SLOT = 'noirlic-key', DB_SLOT = 'noirlic-db';
+const store = {
+  load() { try { return JSON.parse(localStorage.getItem(DB_SLOT)) || null; } catch (e) { return null; } },
+  save() { localStorage.setItem(DB_SLOT, JSON.stringify(S.db)); },
+};
+const S = { db: store.load() || { settings: { vendor: 'NOIR Studio', whatsapp: '', country: 'CO' }, clients: [], issuedKeys: [] }, signKey: null, publicJwk: null, tab: 'clients', q: '', filter: '', fplan: '' };
+
+/* Cifrado de la clave privada con la contraseña del panel */
+async function deriveKey(password, salt) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+/* Clave privada cifrada con el usuario y contraseña del panel (incluida en este archivo) */
+const EMBEDDED_SLOT = null; /* versión web: la clave se carga desde tu archivo, nunca va en la página */
+const getSlot = () => { try { return JSON.parse(localStorage.getItem(KEY_SLOT)) || EMBEDDED_SLOT; } catch (e) { return EMBEDDED_SLOT; } };
+async function sealPrivate(jwkFile, password, user) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await deriveKey(password, salt);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(JSON.stringify(jwkFile))));
+  localStorage.setItem(KEY_SLOT, JSON.stringify({ user: user || getSlot()?.user || 'Richy', salt: b64u(salt), iv: b64u(iv), ct: b64u(ct) }));
+}
+async function decryptSlot(password, slot = getSlot()) {
+  const k = await deriveKey(password, b64uDec(slot.salt));
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64uDec(slot.iv) }, k, b64uDec(slot.ct))));
+}
+async function openPrivate(password) {
+  const slot = getSlot();
+  const k = await deriveKey(password, b64uDec(slot.salt));
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64uDec(slot.iv) }, k, b64uDec(slot.ct));
+  const file = JSON.parse(new TextDecoder().decode(plain));
+  S.signKey = await crypto.subtle.importKey('jwk', file.privateKey, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  S.publicJwk = file.publicKey;
+}
+
+/* ---------- Firma de códigos ---------- */
+async function makeCode(payload) {
+  const data = b64u(new TextEncoder().encode(JSON.stringify(payload)));
+  const sig = new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, S.signKey, new TextEncoder().encode(data)));
+  return `NOIR1.${data}.${b64u(sig)}`;
+}
+async function decodeCode(code) {
+  const m = String(code).replace(/\s+/g, '').match(/^NOIR1\.([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)$/);
+  if (!m) throw new Error('Formato inválido');
+  const payload = JSON.parse(new TextDecoder().decode(b64uDec(m[1])));
+  const pub = await crypto.subtle.importKey('jwk', S.publicJwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+  const ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pub, b64uDec(m[2]), new TextEncoder().encode(m[1]));
+  return { payload, ok };
+}
+
+/* ---------- Países (moneda e impuesto se aplican en el sistema) ---------- */
+const COUNTRIES = [['CO', 'Colombia (COP)'], ['DO', 'República Dominicana (RD$)'], ['MX', 'México'], ['VE', 'Venezuela'], ['PE', 'Perú'], ['EC', 'Ecuador'], ['GT', 'Guatemala'], ['HN', 'Honduras'], ['SV', 'El Salvador'], ['NI', 'Nicaragua'], ['CR', 'Costa Rica'], ['PA', 'Panamá'], ['CL', 'Chile'], ['AR', 'Argentina'], ['ES', 'España'], ['US', 'Estados Unidos'], ['XX', 'Otro / sin impuesto']];
+const countryName = k => (COUNTRIES.find(c => c[0] === k) || [, k || '—'])[1];
+
+/* ---------- IndexedDB (para recordar la carpeta del sistema) ---------- */
+const idb = {
+  open() { return new Promise((res, rej) => { const r = indexedDB.open('noirlic', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k) { const db = await this.open(); return new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); },
+  async set(k, v) { const db = await this.open(); return new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; }); },
+};
+
+/* ---------- ZIP (sin compresión, compatible con Windows) ---------- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function makeZip(files) {
+  const enc = new TextEncoder(), now = new Date();
+  const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const parts = [], central = []; let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = f.data || new Uint8Array(0), crc = crc32(data), size = data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, time, true); lh.setUint16(12, date, true); lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+    lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, time, true); ch.setUint16(14, date, true); ch.setUint32(16, crc, true); ch.setUint32(20, size, true); ch.setUint32(24, size, true);
+    ch.setUint16(28, name.length, true); ch.setUint32(38, f.name.endsWith('/') ? 0x10 : 0, true); ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + size;
+  }
+  const cd = central.reduce((a, b) => a + b.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cd, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
+}
+
+/* ---------- Carpeta del sistema NOIR STORE ---------- */
+const SKIP = new Set(['data', '.git', 'node_modules', 'PREPARAR COPIA PARA CLIENTE.bat', 'Thumbs.db', 'desktop.ini']);
+async function readDir(dir, prefix = '', out = []) {
+  for await (const [name, h] of dir.entries()) {
+    if (!prefix && SKIP.has(name)) continue;
+    if (name.endsWith('.tmp')) continue;
+    if (h.kind === 'directory') { out.push({ name: prefix + name + '/' }); await readDir(h, prefix + name + '/', out); }
+    else out.push({ name: prefix + name, data: new Uint8Array(await (await h.getFile()).arrayBuffer()) });
+  }
+  return out;
+}
+async function systemDir(ask = false) {
+  let h = await idb.get('sysdir');
+  if (h && !ask) {
+    let p = await h.queryPermission({ mode: 'read' });
+    if (p !== 'granted') p = await h.requestPermission({ mode: 'read' });
+    if (p === 'granted') return h;
+  }
+  if (!window.showDirectoryPicker) throw new Error('Tu navegador no permite elegir carpetas. Usa Google Chrome o Microsoft Edge.');
+  h = await showDirectoryPicker({ id: 'noirstore', mode: 'read' });
+  let ok = false;
+  try { const js = await h.getDirectoryHandle('js'); const lic = await (await js.getFileHandle('license.js')).getFile(); ok = (await lic.text()).includes(S.publicJwk.x); } catch (e) { }
+  if (!ok) throw new Error('Esa carpeta no es el sistema NOIR STORE (o usa otra clave). Elige la carpeta que contiene index.html.');
+  await idb.set('sysdir', h);
+  return h;
+}
+async function buildPackage(c, code) {
+  const dir = await systemDir();
+  const files = await readDir(dir);
+  const provision = {
+    id: uid(), createdAt: new Date().toISOString(),
+    vendor: { vendor: S.db.settings.vendor, whatsapp: S.db.settings.whatsapp, revocationUrl: S.db.settings.revocationUrl || '' },
+    country: c.country || S.db.settings.country || 'CO',
+    company: { name: c.business, phone: c.storePhone || '', address: c.city || '' },
+    license: code,
+  };
+  const ascii = s => s.replace(/[\u0080-￿]/g, ch => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
+  const js = `/* Configuracion de entrega generada por el Panel de Licencias - ${today()} */\nwindow.NOIR_PROVISION = ${ascii(JSON.stringify(provision, null, 2))};\n`;
+  const out = files.filter(f => f.name !== 'js/provision.js');
+  out.push({ name: 'js/provision.js', data: new TextEncoder().encode(js) }, { name: 'data/' });
+  const root = 'NOIR STORE - ' + norm(c.business).replace(/[^a-z0-9 ._-]/gi, '').trim().replace(/\b\w/g, m => m.toUpperCase()) + '/';
+  const zip = makeZip([{ name: root }, ...out.map(f => ({ ...f, name: root + f.name }))]);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(zip); a.download = root.slice(0, -1) + '.zip'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  c.deliveredAt = new Date().toISOString(); store.save();
+  return { size: zip.size, files: out.length, name: a.download };
+}
+
+/* ---------- Modal ---------- */
+function modal(title, body, footer = '', size = '') {
+  const w = document.createElement('div'); w.className = 'back';
+  w.innerHTML = `<div class="modal ${size}"><div class="mh"><h3>${title}</h3><button class="x" data-x>×</button></div><div class="mb">${body}</div>${footer ? `<div class="mf">${footer}</div>` : ''}</div>`;
+  document.body.appendChild(w);
+  const m = { el: w, $: s => w.querySelector(s), close: () => w.remove() };
+  w.addEventListener('click', e => { if (e.target.closest('[data-x]')) m.close(); });
+  setTimeout(() => { const f = w.querySelector('input:not([readonly]),textarea,select'); f && f.focus(); }, 30);
+  return m;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const b = [...document.querySelectorAll('.back')].pop(); b && b.remove(); } });
+
+/* ---------- Pantallas de acceso ---------- */
+const STORE_PUB_X = 'hlLoieombQc23q161Ug5pdqRipCdcc9PYZ29S9ZphE4';
+function lockScreen() {
+  const slot = getSlot();
+  if (!slot) return setupScreen();
+  $('#root').innerHTML = `<div class="lock"><div class="lock-box">
+    <img src="assets/mono-cromo.png" alt=""><h1>Panel de Licencias</h1>
+    <p>Ingresa con tu usuario y contraseña.</p>
+    <div class="field"><label>Usuario</label><input id="us" autocomplete="username" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><label>Contraseña</label><input id="pw" type="password" autocomplete="current-password"></div>
+    <button class="btn chrome lg block" id="go">Entrar</button>
+    <p class="small" style="margin-top:22px"><a href="#" id="reset" style="color:var(--muted)">¿Olvidaste la contraseña? Usar de nuevo tu archivo de clave</a></p></div></div>`;
+  let fails = 0;
+  const go = async () => {
+    const userOk = norm($('#us').value.trim()) === norm(slot.user || '');
+    try {
+      if (!userOk) throw new Error('user');
+      await openPrivate($('#pw').value);
+      try { localStorage.setItem('noirlic-lastuser', $('#us').value.trim()); } catch (e) { }
+      app();
+    } catch (e) {
+      fails++; toast('Usuario o contraseña incorrectos', 'err'); $('#pw').value = ''; $('#pw').focus();
+      if (fails >= 5) { $('#go').disabled = true; toast('Demasiados intentos. Espera 30 segundos.', 'warn'); setTimeout(() => { fails = 0; const g = $('#go'); if (g) g.disabled = false; }, 30000); }
+    }
+  };
+  $('#go').onclick = go;
+  $('#reset').onclick = e => { e.preventDefault(); if (confirm('Vas a configurar el acceso de nuevo con tu archivo de clave. Tus clientes NO se borran. ¿Continuar?')) { localStorage.removeItem(KEY_SLOT); setupScreen(); } };
+  $('#us').addEventListener('keydown', e => e.key === 'Enter' && $('#pw').focus());
+  $('#pw').addEventListener('keydown', e => e.key === 'Enter' && go());
+  const last = localStorage.getItem('noirlic-lastuser'); if (last) $('#us').value = last;
+  ($('#us').value ? $('#pw') : $('#us')).focus();
+}
+/* Primera vez en este navegador: cargar el archivo de clave y crear el acceso */
+function setupScreen() {
+  $('#root').innerHTML = `<div class="lock"><div class="lock-box" style="max-width:440px">
+    <img src="assets/mono-cromo.png" alt=""><h1>Panel de Licencias</h1>
+    <p>Primera vez en este navegador. Carga tu archivo <b>CLAVE-PRIVADA-NO-COMPARTIR.json</b> y crea tu usuario y contraseña. Solo se hace una vez.</p>
+    <div class="field"><label>Archivo de clave</label><input id="kf" type="file" accept=".json,application/json"></div>
+    <div class="field"><label>Usuario</label><input id="us" value="Richy" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><label>Contraseña (mín. 6)</label><input id="pw" type="password" autocomplete="new-password"></div>
+    <div class="field"><label>Repetir contraseña</label><input id="pw2" type="password" autocomplete="new-password"></div>
+    <button class="btn chrome lg block" id="go">Configurar y entrar</button>
+    <p class="small" style="margin-top:22px">Tu clave se guarda cifrada solo en este navegador; nunca se envía a internet.</p></div></div>`;
+  $('#go').onclick = async () => {
+    const f = $('#kf').files[0], us = $('#us').value.trim(), pw = $('#pw').value;
+    if (!f) return toast('Selecciona tu archivo de clave', 'warn');
+    if (us.length < 3) return toast('El usuario debe tener al menos 3 caracteres', 'warn');
+    if (pw.length < 6) return toast('La contraseña debe tener al menos 6 caracteres', 'warn');
+    if (pw !== $('#pw2').value) return toast('Las contraseñas no coinciden', 'warn');
+    let file; try { file = JSON.parse(await f.text()); } catch (e) { return toast('Ese archivo no es válido', 'err'); }
+    if (file.tipo !== 'NOIR-LICENCIAS' || !file.privateKey || file.publicKey?.x !== STORE_PUB_X) return toast('Ese archivo no es la clave de NOIR STORE', 'err');
+    try { await sealPrivate(file, pw, us); await openPrivate(pw); localStorage.setItem('noirlic-lastuser', us); toast('Panel configurado'); app(); }
+    catch (e) { toast('No se pudo configurar: ' + e.message, 'err'); }
+  };
+}
+
+/* ---------- Planes de suscripción ---------- */
+const FEATURES = [['credits', 'Créditos y cobros'], ['quotes', 'Cotizaciones'], ['purchases', 'Compras y proveedores'], ['reports', 'Reportes'], ['whatsapp', 'Notificaciones por WhatsApp'],
+  ['layaway', 'Apartados (plan separe)'], ['loyalty', 'Programa de puntos'], ['promos', 'Promociones automáticas'], ['commissions', 'Comisiones de vendedores'],
+  ['ownerAlerts', 'Resúmenes al dueño por WhatsApp'], ['branding', 'Logo propio en facturas'], ['support', 'Soporte prioritario']];
+const PREMIUM_EXTRAS = ['layaway', 'loyalty', 'promos', 'commissions', 'ownerAlerts', 'branding', 'support'];
+const PLANS_VER = 2;
+const DEFAULT_PLANS = () => ({
+  basic: { name: 'Básica', cop: 140000, usd: 43.31, users: 2, products: 300, off: ['purchases', 'reports', 'whatsapp', ...PREMIUM_EXTRAS] },
+  premium: { name: 'Premium', cop: 380000, usd: 117.56, users: 0, products: 0, off: [] },
+});
+const DURATIONS = [['Mensual', 1], ['Trimestral', 3], ['Semestral', 6], ['Anual', 12], ['Personalizado', 0]];
+const fmtCOP = n => '$ ' + Math.round(+n || 0).toLocaleString('es-CO') + ' COP';
+const fmtUSD = n => 'US$ ' + (+n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const planOf = c => S.db.settings.plans[c.tier] || S.db.settings.plans.premium;
+const limText = p => [p.users > 0 ? `${p.users} usuario${p.users === 1 ? '' : 's'}` : 'usuarios ilimitados', p.products > 0 ? `${p.products} productos` : 'productos ilimitados', p.off.length ? `${FEATURES.length - p.off.length} de ${FEATURES.length} funciones` : 'todas las funciones y beneficios'].join(' · ');
+const featList = p => FEATURES.map(([k, n]) => `<div style="font-size:12px;opacity:${p.off.includes(k) ? '.45' : '1'}">${p.off.includes(k) ? '✗' : '✓'} ${n}</div>`).join('');
+
+/* Código de licencia único con letras y números intercalados: NOIR-A7K3-M9X2-P4T8
+   (sin I, O, 0 ni 1 para evitar confusiones; nunca se repite, aunque se borre el cliente) */
+const KEY_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ', KEY_DIGITS = '23456789';
+function newKey() {
+  let k;
+  do {
+    const r = crypto.getRandomValues(new Uint32Array(12));
+    const group = g => [0, 1, 2, 3].map(i => i % 2 === 0 ? KEY_LETTERS[r[g * 4 + i] % KEY_LETTERS.length] : KEY_DIGITS[r[g * 4 + i] % KEY_DIGITS.length]).join('');
+    k = `NOIR-${group(0)}-${group(1)}-${group(2)}`;
+  } while (S.db.issuedKeys.includes(k) || S.db.clients.some(c => c.key === k));
+  S.db.issuedKeys.push(k);
+  store.save();
+  return k;
+}
+const licenseMsg = (c, key) => `Hola ${c.contact || c.business} 👋\n\nEste es tu código de licencia de *NOIR STORE* para *${c.business}*:\n\n🔑 *${key}*\n\nGuárdalo: te lo pediremos para renovar, cambiar de plan o recibir soporte. También lo ves en tu sistema en Configuración → Suscripción.\n\n${S.db.settings.vendor}`;
+function migratePanel() {
+  const d = S.db;
+  d.settings.plans = Object.assign(DEFAULT_PLANS(), d.settings.plans || {});
+  if ((d.settings.plansVer || 1) < PLANS_VER) {
+    // los beneficios nuevos son exclusivos de Premium
+    const b = d.settings.plans.basic; b.off = [...new Set([...(b.off || []), ...PREMIUM_EXTRAS])];
+    d.settings.plansVer = PLANS_VER;
+  }
+  d.issuedKeys = d.issuedKeys || [];
+  d.clients.forEach(c => {
+    if (!c.key) c.key = newKey();
+    if (!c.tier) c.tier = 'premium';
+    if (!c.status) c.status = 'active';
+    c.events = c.events || [];
+    delete c.installId;
+  });
+  store.save();
+}
+const logEvent = (c, type, note = '') => { c.events = c.events || []; c.events.push({ date: new Date().toISOString(), type, note }); };
+
+/* ---------- Estado de cada cliente ---------- */
+function clientState(c) {
+  if (c.status === 'disabled') return { k: 'disabled', label: 'Desactivada', cls: 'err' };
+  if (!c.expires) return { k: 'pending', label: 'Sin entregar', cls: '' };
+  const d = daysTo(c.expires);
+  if (c.status === 'cancelled') return d >= 0 ? { k: 'cancelled', label: `Cancelada · usa hasta ${fmtDate(c.expires)}`, cls: 'warn', d } : { k: 'cancelled', label: 'Cancelada', cls: '', d };
+  if (d < 0) return { k: 'expired', label: `Vencida hace ${-d} d`, cls: 'err', d };
+  if (d <= 7) return { k: 'soon', label: d === 0 ? 'Vence hoy' : `Vence en ${d} d`, cls: 'warn', d };
+  return { k: 'active', label: `Activa · ${d} d`, cls: 'ok', d };
+}
+const waLink = (phone, text) => `https://wa.me/${String(phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
+const tierBadge = c => `<span class="badge ${c.tier === 'premium' ? 'info' : ''}">${esc(planOf(c).name)}</span>`;
+
+/* ---------- App ---------- */
+function app() {
+  migratePanel();
+  const cl = S.db.clients;
+  const st = cl.map(clientState);
+  const live = cl.filter((c, i) => ['active', 'soon'].includes(st[i].k));
+  const mrr = live.reduce((a, c) => a + (+planOf(c).cop || 0), 0);
+  const paid = { COP: 0, USD: 0 };
+  cl.forEach(c => (c.codes || []).forEach(k => { if (k.amount) paid[k.currency || 'COP'] += +k.amount; }));
+  $('#root').innerHTML = `
+    <header><img src="assets/logo-nav.png" alt="NOIR"><span class="tag hide-m">Panel de licencias</span><span class="spacer"></span>
+      <button class="btn sm ghost" id="tool">Verificar código</button><button class="btn sm ghost" id="cfg">Configuración</button><button class="btn sm ghost" id="lock">Bloquear</button></header>
+    <main>
+      <div class="kpis">
+        <div class="card kpi"><div class="l">Clientes</div><div class="v">${cl.length}</div><div class="small muted">${live.length} con servicio activo</div></div>
+        <div class="card kpi"><div class="l">Plan Básica</div><div class="v">${live.filter(c => c.tier === 'basic').length}</div><div class="small muted">${fmtCOP(S.db.settings.plans.basic.cop)}/mes</div></div>
+        <div class="card kpi"><div class="l">Plan Premium</div><div class="v" style="color:var(--info)">${live.filter(c => c.tier === 'premium').length}</div><div class="small muted">${fmtCOP(S.db.settings.plans.premium.cop)}/mes</div></div>
+        <div class="card kpi"><div class="l">Por vencer / vencidas</div><div class="v"><span style="color:var(--warn)">${st.filter(s => s.k === 'soon').length}</span> / <span style="color:var(--err)">${st.filter(s => s.k === 'expired').length}</span></div><div class="small muted">${st.filter(s => s.k === 'cancelled').length} canceladas · ${st.filter(s => s.k === 'disabled').length} desactivadas</div></div>
+        <div class="card kpi"><div class="l">Ingreso mensual activo</div><div class="v" style="font-size:20px">${fmtCOP(mrr)}</div></div>
+        <div class="card kpi"><div class="l">Total cobrado</div><div class="v" style="font-size:20px">${fmtCOP(paid.COP)}</div>${paid.USD ? `<div class="small muted">+ ${fmtUSD(paid.USD)}</div>` : ''}</div>
+      </div>
+      <div class="card">
+        <div class="toolbar"><input class="search" id="q" placeholder="Buscar negocio, licencia, contacto, usuario, teléfono…" value="${esc(S.q)}">
+          <select id="flt">${[['', 'Todos los estados'], ['active', 'Activas'], ['soon', 'Vencen pronto'], ['expired', 'Vencidas'], ['cancelled', 'Canceladas'], ['disabled', 'Desactivadas'], ['pending', 'Sin entregar']].map(([v, l]) => `<option value="${v}" ${S.filter === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+          <select id="fpl"><option value="">Todos los planes</option><option value="basic" ${S.fplan === 'basic' ? 'selected' : ''}>Básica</option><option value="premium" ${S.fplan === 'premium' ? 'selected' : ''}>Premium</option></select>
+          <button class="btn primary" id="new">+ Nuevo cliente</button></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Negocio</th><th>Contacto</th><th>Licencia</th><th>Plan</th><th>Vence</th><th>Estado</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      </div>
+    </main>`;
+  const draw = () => {
+    const q = norm(S.q).split(/\s+/).filter(Boolean);
+    const rows = cl.filter(c => (!S.filter || clientState(c).k === S.filter) && (!S.fplan || c.tier === S.fplan) && q.every(w => norm(`${c.business} ${c.key} ${c.contact} ${c.username} ${c.phone} ${c.email} ${c.city}`).includes(w)))
+      .sort((a, b) => (a.expires || '9999').localeCompare(b.expires || '9999'));
+    $('#rows').innerHTML = rows.map(c => {
+      const s = clientState(c);
+      const main = s.k === 'disabled' ? `<button class="btn sm" data-a="manage" data-id="${c.id}">Reactivar…</button>`
+        : !c.expires ? `<button class="btn sm primary" data-a="deliver" data-id="${c.id}">📦 Entregar sistema</button>`
+          : `<button class="btn sm primary" data-a="code" data-id="${c.id}">Renovar</button>`;
+      return `<tr>
+      <td><div class="t1">${esc(c.business)}</div><div class="t2">${esc([c.city, c.country && countryName(c.country).split(' (')[0]].filter(Boolean).join(' · '))}</div></td>
+      <td><div>${esc(c.contact || '—')}</div><div class="t2">${esc(c.phone || '')}</div></td>
+      <td class="mono" style="font-size:12.5px">${esc(c.key)}</td>
+      <td>${tierBadge(c)}<div class="t2">${esc((c.plan || '').split(' · ')[1] || '')}</div></td><td>${fmtDate(c.expires)}</td><td><span class="badge ${s.cls}">${s.label}</span></td>
+      <td class="acts">${main}
+        ${c.phone && ['soon', 'expired'].includes(s.k) ? `<a class="btn sm success" href="${waLink(c.phone, `Hola ${c.contact || c.business} 👋\nTe recordamos que tu suscripción ${planOf(c).name} de NOIR STORE ${s.k === 'expired' ? 'venció' : 'vence'} el ${fmtDate(c.expires)}.\nLicencia: ${c.key}\nValor mensual: ${fmtCOP(planOf(c).cop)} (${fmtUSD(planOf(c).usd)}). ¿Deseas renovarla?\n\n${S.db.settings.vendor}`)}" target="_blank">Recordar</a>` : ''}
+        <button class="btn sm" data-a="manage" data-id="${c.id}">Gestionar</button><button class="btn sm ghost" data-a="edit" data-id="${c.id}">Editar</button></td></tr>`;
+    }).join('') || `<tr><td colspan="7"><div class="empty">${cl.length ? 'Sin resultados' : 'Aún no tienes clientes. Crea el primero con “+ Nuevo cliente”.'}</div></td></tr>`;
+  };
+  draw();
+  $('#q').oninput = e => { S.q = e.target.value; draw(); };
+  $('#flt').onchange = e => { S.filter = e.target.value; draw(); };
+  $('#fpl').onchange = e => { S.fplan = e.target.value; draw(); };
+  $('#new').onclick = () => clientForm(null);
+  $('#lock').onclick = () => { S.signKey = null; lockScreen(); };
+  $('#cfg').onclick = settingsModal;
+  $('#tool').onclick = verifyTool;
+  $('#rows').onclick = e => {
+    const b = e.target.closest('[data-a]'); if (!b) return;
+    const c = cl.find(x => x.id === b.dataset.id);
+    ({ code: x => codeModal(x), deliver: x => codeModal(x, { deliver: true }), manage: manageModal, edit: clientForm })[b.dataset.a](c);
+  };
+}
+
+/* ---------- Cliente ---------- */
+function planCards(sel) {
+  const P = S.db.settings.plans;
+  return `<div class="plans" id="tiers" style="grid-template-columns:1fr 1fr">${['basic', 'premium'].map(k => `<button type="button" data-tier="${k}" class="${sel === k ? 'on' : ''}" style="text-align:left;padding:14px">
+    <b>${esc(P[k].name)}</b><div style="font-weight:600;margin-top:4px">${fmtCOP(P[k].cop)} <span style="font-weight:400">/ mes</span></div><div class="small">${fmtUSD(P[k].usd)} / mes</div>
+    <div class="small" style="margin-top:6px;opacity:.8">${esc(limText(P[k]))}</div><div style="margin-top:8px;columns:2;column-gap:10px">${featList(P[k])}</div></button>`).join('')}</div>`;
+}
+function clientForm(c) {
+  const isNew = !c;
+  c = c ? { ...c } : { id: uid(), business: '', contact: '', phone: '', email: '', city: '', username: '', password: genPassword(), tier: 'basic', status: 'active', notes: '', codes: [], events: [], createdAt: new Date().toISOString() };
+  let tier = c.tier || 'basic';
+  const m = modal(isNew ? 'Nuevo cliente' : 'Editar cliente', `<div class="grid2">
+    <div class="field span2"><label>Plan de suscripción</label>${planCards(tier)}</div>
+    <div class="field span2"><label>Nombre del negocio *</label><input id="f-b" value="${esc(c.business)}" placeholder="Ej. Boutique Luna"></div>
+    <div class="field"><label>Persona de contacto</label><input id="f-c" value="${esc(c.contact)}"></div>
+    <div class="field"><label>WhatsApp (con código de país)</label><input id="f-p" value="${esc(c.phone)}" placeholder="573001234567"></div>
+    <div class="field"><label>Correo</label><input id="f-e" value="${esc(c.email)}"></div>
+    <div class="field"><label>Ciudad / dirección</label><input id="f-ci" value="${esc(c.city)}"></div>
+    <div class="field"><label>País (moneda e impuesto del sistema)</label><select id="f-co">${COUNTRIES.map(([k, n]) => `<option value="${k}" ${(c.country || S.db.settings.country || 'CO') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="field"><label>Teléfono del negocio (sale en facturas)</label><input id="f-sp" value="${esc(c.storePhone || '')}"></div>
+    <div class="field"><label>Usuario del administrador *</label><input id="f-u" value="${esc(c.username)}" placeholder="ej. luna" autocapitalize="off"><span class="hint">Con este usuario entrará a su sistema.</span></div>
+    <div class="field"><label>Contraseña inicial *</label><div class="row" style="flex-wrap:nowrap"><input id="f-pw" value="${esc(c.password)}"><button class="btn" id="f-gen" type="button">Generar</button></div><span class="hint">${(c.codes || []).length ? 'Si la cambias, el cliente seguirá entrando con la contraseña anterior hasta que active su próximo código: el panel se lo incluirá automáticamente.' : 'El cliente podrá cambiarla en Configuración → Mi cuenta.'}</span></div>
+    <div class="field span2"><label>Código de licencia</label>
+      <div class="row" style="flex-wrap:nowrap"><input id="f-key" class="mono" style="font-size:16px;letter-spacing:.08em;font-weight:600" value="${esc(c.key || '')}" placeholder="Pulsa “Generar código de licencia”" readonly>
+        <button class="btn primary" id="f-kgen" type="button" style="white-space:nowrap">🔑 Generar código de licencia</button><button class="btn" id="f-kcopy" type="button">Copiar</button></div>
+      <span class="hint">Letras y números intercalados. Cada código es único y nunca se repite.</span></div>
+    <div class="field span2"><label>Notas</label><textarea id="f-n" rows="2">${esc(c.notes)}</textarea></div></div>`,
+    `${!isNew ? '<button class="btn danger" id="f-del" style="margin-right:auto">Eliminar</button>' : ''}<button class="btn ghost" data-x>Cancelar</button><button class="btn primary" id="f-ok">${isNew ? 'Guardar y entregar sistema' : 'Guardar'}</button>`, 'lg');
+  m.$('#tiers').onclick = e => { const b = e.target.closest('[data-tier]'); if (!b) return; tier = b.dataset.tier; m.el.querySelectorAll('#tiers button').forEach(x => x.classList.toggle('on', x === b)); };
+  m.$('#f-gen').onclick = () => m.$('#f-pw').value = genPassword();
+  let key = c.key || '';
+  m.$('#f-kgen').onclick = () => {
+    if (key && (c.codes || []).length && !confirm(`Este cliente ya tiene códigos con la licencia ${key}.\n\n¿Asignarle una licencia NUEVA? La anterior queda retirada (no se vuelve a usar) y su sistema tomará la nueva cuando active su próximo código.`)) return;
+    key = newKey(); m.$('#f-key').value = key;
+    m.$('#f-key').animate([{ background: 'rgba(62,207,142,.25)' }, { background: 'transparent' }], { duration: 900 });
+    toast(`Código de licencia generado: ${key}`);
+  };
+  m.$('#f-kcopy').onclick = () => { if (!key) return toast('Primero genera el código de licencia', 'warn'); navigator.clipboard.writeText(key); toast('Código de licencia copiado'); };
+  const del = m.$('#f-del'); if (del) del.onclick = () => { if (confirm(`¿Eliminar a ${c.business}? Su código de licencia (${c.key}) no se volverá a usar. Para bloquear su sistema usa “Desactivar” en Gestionar.`)) { S.db.clients = S.db.clients.filter(x => x.id !== c.id); store.save(); m.close(); app(); } };
+  m.$('#f-ok').onclick = () => {
+    c.business = m.$('#f-b').value.trim(); c.contact = m.$('#f-c').value.trim(); c.phone = m.$('#f-p').value.replace(/\D/g, ''); c.email = m.$('#f-e').value.trim();
+    const prevUser = c.username, prevPass = c.password;
+    c.city = m.$('#f-ci').value.trim(); c.username = m.$('#f-u').value.trim(); c.password = m.$('#f-pw').value.trim(); c.notes = m.$('#f-n').value.trim();
+    c.country = m.$('#f-co').value; c.storePhone = m.$('#f-sp').value.trim();
+    if (!c.business) return toast('El nombre del negocio es obligatorio', 'warn');
+    if (!/^[a-zA-Z0-9._-]{3,30}$/.test(c.username)) return toast('Usuario inválido: mínimo 3 caracteres, sin espacios', 'warn');
+    if (c.password.length < 4) return toast('La contraseña debe tener al menos 4 caracteres', 'warn');
+    if (/\s/.test(c.password)) return toast('La contraseña no puede tener espacios', 'warn');
+    if (!isNew && (c.codes || []).length && (prevUser !== c.username || prevPass !== c.password)) { c.credsPending = true; logEvent(c, 'Acceso modificado', 'Pendiente de enviar al cliente'); toast('Acceso cambiado. Envíale un código con acceso: Gestionar → Restablecer acceso (o al renovar).', 'warn'); }
+    if (!isNew && tier !== c.tier && c.expires) toast('El cambio de plan se aplica al generar su próximo código (Renovar).', 'warn');
+    if (isNew || !c.expires) c.tier = tier; else c.nextTier = tier !== c.tier ? tier : undefined;
+    if (!key) key = newKey();
+    if (c.key && c.key !== key) logEvent(c, 'Código de licencia cambiado', `${c.key} → ${key}`);
+    c.key = key;
+    if (isNew) logEvent(c, 'Cliente creado', `Licencia ${c.key} · plan ${planOf(c).name}`);
+    const i = S.db.clients.findIndex(x => x.id === c.id);
+    if (i >= 0) S.db.clients[i] = c; else S.db.clients.push(c);
+    store.save(); m.close(); app();
+    if (isNew) codeModal(c, { deliver: true });
+  };
+}
+
+/* ---------- Generar código (entregar / renovar / restablecer acceso) ---------- */
+function codeModal(c, opt = {}) {
+  if (c.status === 'disabled') return toast('Este cliente está desactivado. Reactívalo en Gestionar.', 'warn');
+  const first = !(c.codes || []).length;
+  const deliver = !!opt.deliver, reset = !!opt.reset && !!c.expires && c.expires >= today();
+  let tier = c.nextTier || c.tier || 'basic';
+  let dur = reset ? DURATIONS[4] : DURATIONS[0];
+  const title = deliver ? 'Entregar sistema' : reset ? 'Restablecer acceso' : (first ? 'Código de activación' : 'Renovar suscripción');
+  const m = modal(`${title} · ${esc(c.business)}`, `
+    ${deliver && !reset ? `<div class="callout" style="margin-bottom:14px">📦 Se generará el sistema <b>NOIR STORE</b> para <b>${esc(c.business)}</b> (${esc(countryName(c.country || S.db.settings.country))}), ya activado con su plan, su licencia <b class="mono">${esc(c.key)}</b> y su usuario <b class="mono">${esc(c.username)}</b>.</div>` : ''}
+    ${reset ? `<div class="callout warn" style="margin-bottom:14px">Se mantiene su plan y su vencimiento (${fmtDate(c.expires)}). El usuario <b class="mono">${esc(c.username)}</b> quedará con la contraseña registrada en su ficha.</div>` : ''}
+    ${c.status === 'cancelled' && !reset ? '<div class="callout warn" style="margin-bottom:14px">Este cliente tiene la suscripción cancelada. Al generar el código se reactivará.</div>' : ''}
+    <div style="${reset ? 'display:none' : ''}">
+      <div class="field" style="margin-bottom:14px"><label>Plan</label>${planCards(tier)}</div>
+      <div class="field" style="margin-bottom:14px"><label>Duración</label><div class="plans" id="plans">${DURATIONS.map(([n, mo], i) => `<button type="button" data-i="${i}" class="${DURATIONS[i] === dur ? 'on' : ''}"><b>${mo || '…'}</b>${mo ? (mo === 1 ? 'mes' : 'meses') : n}</button>`).join('')}</div></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Desde</label><input id="c-from" type="date" value="${c.expires && c.expires > today() ? c.expires : today()}"><span class="hint">${c.expires && c.expires > today() ? 'Se suma a su vencimiento actual.' : 'Empieza hoy.'}</span></div>
+      <div class="field"><label>Vence</label><input id="c-to" type="date"></div>
+      <div class="field" style="${reset ? 'display:none' : ''}"><label>Valor cobrado</label><div class="row" style="flex-wrap:nowrap"><input id="c-amt" inputmode="decimal"><select id="c-cur" style="width:96px"><option>COP</option><option>USD</option></select></div><span class="hint" id="c-amt-h"></span></div>
+      <div class="field"><label>Código de licencia</label><input class="mono" value="${esc(c.key)}" readonly></div>
+      <label class="check span2"><input type="checkbox" id="c-cred" ${first || deliver || reset || c.credsPending ? 'checked' : ''} ${deliver || reset ? 'disabled' : ''}> Incluir usuario y contraseña <span class="muted small">(primera activación o para restablecer el acceso del administrador)</span></label>
+    </div>
+    <div id="c-out" style="margin-top:16px"></div>`,
+    `<button class="btn ghost" data-x>Cerrar</button><button class="btn chrome" id="c-go">${deliver ? '📦 Generar y descargar sistema' : reset ? 'Generar código de acceso' : 'Generar código'}</button>`, 'lg');
+  const plan = () => S.db.settings.plans[tier];
+  const calc = () => {
+    const from = m.$('#c-from').value || today();
+    if (dur[1]) m.$('#c-to').value = addMonths(from, dur[1]);
+    const months = dur[1] || Math.max(1, Math.round(daysTo(m.$('#c-to').value || today()) / 30));
+    const cur = m.$('#c-cur').value;
+    const v = cur === 'USD' ? Math.round(plan().usd * months * 100) / 100 : plan().cop * months;
+    m.$('#c-amt').value = cur === 'USD' ? v.toFixed(2) : Math.round(v);
+    m.$('#c-amt-h').textContent = `${plan().name} × ${months} mes(es) = ${fmtCOP(plan().cop * months)} · ${fmtUSD(plan().usd * months)}`;
+  };
+  calc();
+  if (reset) { m.$('#c-to').value = c.expires; m.$('#c-from').value = today(); }
+  m.$('#tiers').onclick = e => { const b = e.target.closest('[data-tier]'); if (!b) return; tier = b.dataset.tier; m.el.querySelectorAll('#tiers button').forEach(x => x.classList.toggle('on', x === b)); calc(); };
+  m.$('#plans').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; dur = DURATIONS[+b.dataset.i]; m.el.querySelectorAll('#plans button').forEach(x => x.classList.toggle('on', x === b)); calc(); if (!dur[1]) m.$('#c-to').focus(); };
+  m.$('#c-from').onchange = calc; m.$('#c-cur').onchange = calc; m.$('#c-to').onchange = () => { if (!dur[1]) calc(); };
+  m.$('#c-go').onclick = async () => {
+    const to = m.$('#c-to').value;
+    if (!to || to < today()) return toast('Indica una fecha de vencimiento válida', 'warn');
+    const withCreds = m.$('#c-cred').checked;
+    if (reset) tier = c.tier;
+    const p = S.db.settings.plans[tier];
+    const durName = reset ? ((c.plan || '').split(' · ')[1] || 'Suscripción') : dur[1] ? dur[0] : `Hasta ${fmtDate(to)}`;
+    const planName = `${p.name} · ${durName}`;
+    const payload = { v: 2, id: uid(), k: c.key, n: c.business, p: planName, tier, lim: { u: p.users, pr: p.products, on: FEATURES.map(f => f[0]).filter(f => !p.off.includes(f)) }, e: to, t: today() };
+    if (withCreds) { const s = randHex(12); Object.assign(payload, { u: c.username, s, h: hashPass(c.password, s), an: c.contact || 'Administrador' }); }
+    const btn = m.$('#c-go'); btn.disabled = true;
+    const code = await makeCode(payload);
+    btn.disabled = false;
+    const amount = reset ? 0 : +String(m.$('#c-amt').value).replace(/[^\d.]/g, '') || 0;
+    const rec = { id: payload.id, date: new Date().toISOString(), plan: planName, tier, from: m.$('#c-from').value, to, withCreds, kind: deliver ? 'entrega' : reset ? 'acceso' : first ? 'activación' : 'renovación', amount, currency: m.$('#c-cur').value, code };
+    c.codes = c.codes || []; c.codes.push(rec);
+    if (!c.expires || to > c.expires) c.expires = to;
+    c.plan = planName; c.tier = tier; delete c.nextTier;
+    if (withCreds) { delete c.credsPending; c.credsSentAt = new Date().toISOString(); }
+    if (c.status === 'cancelled' && !reset) { c.status = 'active'; logEvent(c, 'Suscripción reanudada'); }
+    logEvent(c, rec.kind[0].toUpperCase() + rec.kind.slice(1), `${planName} hasta ${fmtDate(to)}${amount ? ` · ${rec.currency === 'USD' ? fmtUSD(amount) : fmtCOP(amount)}` : ''}`);
+    const i = S.db.clients.findIndex(x => x.id === c.id); S.db.clients[i] = c; store.save();
+    const creds = `🔐 Tus datos de acceso (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n(Puedes cambiarlos en Configuración → Mi cuenta)`;
+    const msg = deliver
+      ? `Hola ${c.contact || c.business} 👋\n\nTe envío tu sistema *NOIR STORE* para *${c.business}*, ya configurado y activado.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n${tier === 'premium' ? '\n⭐ Tu plan Premium incluye: apartados, programa de puntos, promociones automáticas, comisiones, reportes, compras, WhatsApp, resúmenes al dueño, logo propio y soporte prioritario.\n' : ''}\n📦 Cómo instalarlo:\n1. Descomprime el archivo .zip que te envié (clic derecho → Extraer todo).\n2. Abre la carpeta y haz doble clic en *INICIAR NOIR STORE.bat*.\n3. Entra con tus datos:\n\n${creds}\n\nPara guardar en archivos y usarlo desde varios equipos instala Node.js (https://nodejs.org). Sin Node.js también funciona en el navegador.\n\n${S.db.settings.vendor}`
+      : `Hola ${c.contact || c.business} 👋\n\nAquí tienes tu código ${reset ? 'para restablecer tu acceso' : first ? 'de activación' : 'de renovación'} de *NOIR STORE*\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n\n${code}\n\n${withCreds ? creds + '\n\n' : ''}Cómo usarlo: copia el código completo y pégalo en Configuración → Suscripción (o en la pantalla de activación).\n\n${S.db.settings.vendor}`;
+    m.$('#c-out').innerHTML = `<div class="callout ok" style="margin-bottom:10px">✓ ${deliver ? 'Sistema preparado' : 'Código generado'}: ${esc(planName)} hasta el ${fmtDate(to)}${withCreds ? ' · incluye usuario y contraseña' : ''}</div>
+      ${deliver ? '<div id="c-zipst" class="callout" style="margin-bottom:10px">Preparando el .zip…</div>' : ''}
+      <div class="code" id="c-code">${esc(code)}</div>
+      <div class="row" style="margin-top:10px">${withCreds ? `<button class="btn primary" id="c-zip">📦 Descargar sistema configurado (.zip)</button>` : ''}<button class="btn" id="c-copy">Copiar código</button><button class="btn" id="c-copym">Copiar mensaje</button>
+      ${c.phone ? `<a class="btn success" target="_blank" href="${waLink(c.phone, msg)}">Enviar por WhatsApp</a>` : '<span class="muted small">Agrega su WhatsApp para enviarlo directo.</span>'}</div>
+      ${deliver ? '<p class="small muted" style="margin-bottom:0">WhatsApp no permite adjuntar archivos desde un enlace: al abrir el chat, adjunta el .zip de tu carpeta Descargas y envía el mensaje.</p>' : ''}`;
+    m.$('#c-copy').onclick = () => { navigator.clipboard.writeText(code); toast('Código copiado'); };
+    m.$('#c-copym').onclick = () => { navigator.clipboard.writeText(msg); toast('Mensaje copiado'); };
+    const doZip = async () => {
+      const st = m.$('#c-zipst') || m.$('#c-out').appendChild(Object.assign(document.createElement('div'), { id: 'c-zipst', className: 'callout' }));
+      st.className = 'callout'; st.textContent = 'Preparando el .zip…';
+      try { const r = await buildPackage(c, code); st.className = 'callout ok'; st.innerHTML = `✓ Descargado <b>${esc(r.name)}</b> (${(r.size / 1048576).toFixed(1)} MB, ${r.files} archivos). Envíaselo a tu cliente.`; app(); }
+      catch (e) { st.className = 'callout warn'; st.textContent = e.name === 'AbortError' ? 'Elige la carpeta del sistema NOIR STORE para generar el .zip.' : e.message; }
+    };
+    const zb = m.$('#c-zip'); if (zb) zb.onclick = doZip;
+    app();
+    if (deliver) doZip();
+  };
+}
+
+/* ---------- Gestionar cliente: renovar, cancelar, desactivar ---------- */
+function manageModal(c) {
+  const s = clientState(c), p = planOf(c);
+  const m = modal(`Gestionar · ${esc(c.business)}`, `
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="span2"><div class="hint">Código de licencia</div><div class="row" style="gap:8px"><span class="mono" style="font-size:17px;font-weight:600;letter-spacing:.08em">${esc(c.key)}</span>
+        <button class="btn sm" id="m-ck">Copiar</button>${c.phone ? `<a class="btn sm success" target="_blank" href="${waLink(c.phone, licenseMsg(c, c.key))}">Enviar por WhatsApp</a>` : ''}
+        ${c.status !== 'disabled' ? '<button class="btn sm ghost" id="m-knew">🔑 Generar nuevo código de licencia</button>' : ''}</div></div>
+      <div><div class="hint">Estado</div><span class="badge ${s.cls}">${s.label}</span></div>
+      <div><div class="hint">Plan</div>${tierBadge(c)} ${esc((c.plan || '').split(' · ')[1] || '')} <span class="small muted">· ${fmtCOP(p.cop)} / ${fmtUSD(p.usd)} al mes</span>${c.nextTier ? `<div class="small" style="color:var(--warn)">Cambiará a ${esc(S.db.settings.plans[c.nextTier].name)} en la próxima renovación</div>` : ''}</div>
+      <div><div class="hint">Vence</div>${fmtDate(c.expires)}</div>
+      <div><div class="hint">Usuario</div><span class="mono">${esc(c.username)}</span></div><div><div class="hint">Contraseña inicial</div><span class="mono">${esc(c.password)}</span></div>
+    </div>
+    ${c.credsPending ? `<div class="callout warn" style="margin-bottom:14px">⚠️ Cambiaste el usuario o la contraseña de este cliente y todavía no se los has enviado. Su sistema sigue con los datos anteriores. Usa <b>🔐 Restablecer acceso</b> (o renueva) y envíale el código.</div>` : ''}
+    ${c.notes ? `<div class="callout" style="margin-bottom:14px">${esc(c.notes)}</div>` : ''}
+    <div class="row" style="margin-bottom:16px">
+      ${c.status !== 'disabled' ? `<button class="btn primary" id="m-renew">${c.expires ? 'Renovar / cambiar plan' : '📦 Entregar sistema'}</button>` : ''}
+      ${c.status !== 'disabled' && c.expires && c.expires >= today() ? `<button class="btn" id="m-zip">📦 Descargar su sistema otra vez</button><button class="btn" id="m-reset">🔐 Restablecer acceso</button>` : ''}
+      <span class="spacer"></span>
+      ${c.status === 'active' && c.expires ? '<button class="btn" id="m-cancel">Cancelar suscripción</button>' : ''}
+      ${c.status === 'cancelled' ? '<button class="btn" id="m-resume">Reanudar suscripción</button>' : ''}
+      ${c.status !== 'disabled' ? '<button class="btn danger" id="m-disable">Desactivar licencia</button>' : '<button class="btn success" id="m-enable">Reactivar licencia</button>'}
+    </div>
+    <div class="tabs"><button class="tab on">Códigos</button></div>
+    <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Plan</th><th>Vigencia</th><th class="r">Valor</th><th></th></tr></thead><tbody>
+    ${(c.codes || []).slice().reverse().map(k => `<tr><td>${fmtDate(k.date)}</td><td>${esc(k.kind || 'código')}${k.withCreds ? ' <span class="badge info">con acceso</span>' : ''}</td><td>${esc(k.plan)}</td><td>${fmtDate(k.from)} → ${fmtDate(k.to)}</td><td class="r">${k.amount ? (k.currency === 'USD' ? fmtUSD(k.amount) : fmtCOP(k.amount)) : '—'}</td><td class="acts"><button class="btn sm" data-copy="${k.id}">Copiar</button></td></tr>`).join('') || '<tr><td colspan="6"><div class="empty">Sin códigos</div></td></tr>'}
+    </tbody></table>
+    ${(c.events || []).length ? `<div class="hint" style="margin:16px 0 6px">Historial</div>${c.events.slice().reverse().map(e => `<div class="small" style="padding:4px 0;border-bottom:1px solid var(--line)">${fmtDate(e.date)} · <b>${esc(e.type)}</b> ${esc(e.note || '')}</div>`).join('')}` : ''}`,
+    `<button class="btn ghost" data-x>Cerrar</button>`, 'lg');
+  const reopen = () => { m.close(); app(); manageModal(S.db.clients.find(x => x.id === c.id)); };
+  const save = () => { const i = S.db.clients.findIndex(x => x.id === c.id); S.db.clients[i] = c; store.save(); };
+  m.el.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) { navigator.clipboard.writeText(c.codes.find(k => k.id === b.dataset.copy).code); toast('Código copiado'); } });
+  m.$('#m-ck').onclick = () => { navigator.clipboard.writeText(c.key); toast('Código de licencia copiado'); };
+  const kn = m.$('#m-knew'); if (kn) kn.onclick = () => {
+    if (!confirm(`¿Generar un código de licencia NUEVO para ${c.business}?\n\nLa licencia ${c.key} queda retirada y no se vuelve a usar.${(c.codes || []).length ? '\nSu sistema tomará la nueva licencia cuando active su próximo código (renovación o restablecer acceso).' : ''}`)) return;
+    const old = c.key; c.key = newKey(); logEvent(c, 'Código de licencia cambiado', `${old} → ${c.key}`); save();
+    toast(`Nuevo código de licencia: ${c.key}`); reopen();
+  };
+  const on = (id, fn) => { const b = m.$(id); if (b) b.onclick = fn; };
+  on('#m-renew', () => { m.close(); codeModal(c, { deliver: !c.expires }); });
+  on('#m-zip', () => { m.close(); codeModal(c, { deliver: true, reset: true }); });
+  on('#m-reset', () => { m.close(); codeModal(c, { reset: true }); });
+  on('#m-cancel', () => {
+    if (!confirm(`¿Cancelar la suscripción de ${c.business}?\n\nSu sistema seguirá funcionando hasta el ${fmtDate(c.expires)} (ya está pagado) y no se le enviarán recordatorios de renovación. Puedes reanudarla cuando quieras.`)) return;
+    const why = prompt('Motivo de la cancelación (opcional):') || '';
+    c.status = 'cancelled'; c.cancelledAt = new Date().toISOString(); logEvent(c, 'Suscripción cancelada', why); save(); toast('Suscripción cancelada'); reopen();
+  });
+  on('#m-resume', () => { c.status = 'active'; logEvent(c, 'Suscripción reanudada'); save(); toast('Suscripción reanudada'); reopen(); });
+  on('#m-disable', () => {
+    if (!confirm(`¿Desactivar la licencia ${c.key} de ${c.business}?\n\nNo podrás generarle códigos hasta reactivarla.${S.db.settings.revocationUrl ? '\nSu sistema se bloqueará la próxima vez que se conecte a internet, después de que publiques la lista actualizada.' : '\nComo no tienes configurada la desactivación remota, su sistema se bloqueará al llegar a su fecha de vencimiento.'}`)) return;
+    const why = prompt('Motivo (opcional):') || '';
+    c.status = 'disabled'; c.disabledAt = new Date().toISOString(); logEvent(c, 'Licencia desactivada', why); save();
+    toast(S.db.settings.revocationUrl ? 'Licencia desactivada. Publica la lista actualizada (Configuración → Desactivación remota).' : 'Licencia desactivada', 'warn');
+    reopen();
+  });
+  on('#m-enable', () => {
+    c.status = 'active'; logEvent(c, 'Licencia reactivada'); save();
+    toast(S.db.settings.revocationUrl ? 'Licencia reactivada. Publica la lista actualizada para desbloquear su sistema.' : 'Licencia reactivada');
+    reopen();
+  });
+}
+
+/* ---------- Herramientas ---------- */
+function verifyTool() {
+  const m = modal('Verificar un código', `<div class="field"><label>Pega un código NOIR1…</label><textarea id="v-c" rows="5" class="mono" style="font-size:12px"></textarea></div><div id="v-out" style="margin-top:12px"></div>`,
+    `<button class="btn ghost" data-x>Cerrar</button><button class="btn primary" id="v-go">Verificar</button>`);
+  m.$('#v-go').onclick = async () => {
+    try {
+      const { payload: p, ok } = await decodeCode(m.$('#v-c').value);
+      if (p.type === 'revocation') { m.$('#v-out').innerHTML = `<div class="callout ${ok ? 'ok' : 'warn'}">${ok ? '✓ Lista de desactivación válida' : '✗ Firma inválida'} · ${(p.keys || []).length} licencia(s) · ${fmtDate(p.t)}</div><div class="mono small" style="margin-top:8px">${(p.keys || []).map(esc).join('<br>')}</div>`; return; }
+      const c = S.db.clients.find(x => x.key === p.k);
+      m.$('#v-out').innerHTML = `<div class="callout ${ok ? 'ok' : 'warn'}">${ok ? '✓ Firma válida (generado por tu panel)' : '✗ Firma inválida: este código no es tuyo o fue modificado'}</div>
+        <div class="grid2" style="margin-top:12px"><div><div class="hint">Negocio</div>${esc(p.n)}${c ? '' : ' <span class="badge">no está en tu lista</span>'}</div><div><div class="hint">Licencia</div><span class="mono">${esc(p.k || '—')}</span></div>
+        <div><div class="hint">Plan</div>${esc(p.p)}</div><div><div class="hint">Vence</div>${fmtDate(p.e)}</div><div><div class="hint">Emitido</div>${fmtDate(p.t)}</div>
+        <div><div class="hint">Incluye acceso</div>${p.u ? 'Sí · usuario ' + esc(p.u) : 'No'}</div><div class="span2"><div class="hint">Límites</div>${p.lim ? esc(limText({ users: p.lim.u, products: p.lim.pr, off: p.lim.on ? FEATURES.map(f => f[0]).filter(f => !p.lim.on.includes(f)) : (p.lim.off || []) })) : 'Sin límites'}</div></div>`;
+    } catch (e) { m.$('#v-out').innerHTML = `<div class="callout warn">${esc(e.message)}</div>`; }
+  };
+}
+async function revocationFile() {
+  const keys = S.db.clients.filter(c => c.status === 'disabled').map(c => c.key);
+  const code = await makeCode({ type: 'revocation', keys, t: today(), n: keys.length });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([code], { type: 'text/plain' })); a.download = 'noir-revocados.txt'; a.click();
+  return keys.length;
+}
+function settingsModal() {
+  const s = S.db.settings, P = s.plans;
+  const planEditor = k => `<div class="card" style="padding:14px"><div class="field" style="margin-bottom:10px"><label>Nombre</label><input data-p="${k}" data-f="name" value="${esc(P[k].name)}"></div>
+    <div class="grid2" style="gap:10px"><div class="field"><label>Precio mensual COP</label><input data-p="${k}" data-f="cop" inputmode="numeric" value="${P[k].cop}"></div><div class="field"><label>Precio mensual USD</label><input data-p="${k}" data-f="usd" inputmode="decimal" value="${P[k].usd}"></div>
+    <div class="field"><label>Máx. usuarios (0 = ilimitado)</label><input data-p="${k}" data-f="users" inputmode="numeric" value="${P[k].users}"></div><div class="field"><label>Máx. productos (0 = ilimitado)</label><input data-p="${k}" data-f="products" inputmode="numeric" value="${P[k].products}"></div></div>
+    <div class="hint" style="margin:10px 0 6px">Funciones incluidas</div>${FEATURES.map(([f, n]) => `<label class="check" style="display:flex;margin:4px 0"><input type="checkbox" data-p="${k}" data-feat="${f}" ${P[k].off.includes(f) ? '' : 'checked'}> ${n}</label>`).join('')}</div>`;
+  const m = modal('Configuración del panel', `<div class="tabs"><button class="tab on" data-t="gen">General</button><button class="tab" data-t="plans">Planes</button><button class="tab" data-t="rev">Desactivación remota</button></div>
+    <div data-pane="gen"><div class="grid2">
+    <div class="field"><label>Tu nombre / marca</label><input id="s-v" value="${esc(s.vendor)}"></div>
+    <div class="field"><label>Tu WhatsApp</label><input id="s-w" value="${esc(s.whatsapp)}" placeholder="573001234567"></div>
+    <div class="callout span2 small">Tu nombre y WhatsApp se incluyen automáticamente en cada sistema que entregas: tus clientes verán el botón “Contactar” para renovar.</div>
+    <div class="field"><label>País por defecto de nuevos clientes</label><select id="s-co">${COUNTRIES.map(([k, n]) => `<option value="${k}" ${(s.country || 'CO') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="field"><label>Carpeta del sistema NOIR STORE</label><div class="row" style="flex-wrap:nowrap"><input id="s-dir" readonly placeholder="Sin elegir"><button class="btn" id="s-pick" type="button">Elegir</button></div><span class="hint">La que contiene index.html. Se usa para generar los .zip.</span></div>
+    <div class="field span2"><label>Respaldo de clientes</label><div class="row"><button class="btn" id="s-exp">Descargar respaldo</button><button class="btn" id="s-imp">Restaurar respaldo</button></div><span class="hint">Los datos del panel viven en este navegador: descarga respaldos con frecuencia.</span></div>
+    <div class="field span2"><label>Cambiar usuario y contraseña del panel</label><div class="row" style="flex-wrap:nowrap"><input id="s-p1" type="password" placeholder="Contraseña actual"><input id="s-u2" placeholder="Usuario" value="${esc(getSlot().user || 'Richy')}"><input id="s-p2" type="password" placeholder="Nueva contraseña (mín. 6)"><button class="btn" id="s-pw">Cambiar</button></div><span class="hint">Deja la nueva contraseña vacía para cambiar solo el usuario.</span></div></div></div>
+    <div data-pane="plans" style="display:none"><div class="grid2">${planEditor('basic')}${planEditor('premium')}</div><p class="small muted">Los cambios aplican a los códigos que generes desde ahora. Los clientes los reciben al renovar.</p></div>
+    <div data-pane="rev" style="display:none">
+      <p class="small muted" style="margin-top:0">Para que <b>Desactivar licencia</b> bloquee el sistema del cliente de inmediato (y no al vencer), publica una lista firmada en internet. Cada sistema la revisa al abrir y cada 6 horas cuando tiene internet.</p>
+      <ol class="small" style="color:var(--text2);line-height:1.7;padding-left:18px"><li>Crea un repositorio público en GitHub (gratis) y sube el archivo <b>noir-revocados.txt</b> que descargas aquí.</li><li>Abre el archivo en GitHub, pulsa <b>Raw</b> y copia esa dirección (empieza por https://raw.githubusercontent.com/…).</li><li>Pégala abajo y guarda. Los sistemas que entregues desde ahora la usarán.</li><li>Cada vez que desactives o reactives a alguien, descarga la lista de nuevo y reemplázala en GitHub.</li></ol>
+      <div class="field" style="margin:12px 0"><label>Dirección pública de la lista</label><input id="s-rev" value="${esc(s.revocationUrl || '')}" placeholder="https://raw.githubusercontent.com/usuario/repo/main/noir-revocados.txt"></div>
+      <button class="btn primary" id="s-revdl">Descargar lista firmada (${S.db.clients.filter(c => c.status === 'disabled').length} desactivada(s))</button></div>`,
+    `<button class="btn ghost" data-x>Cerrar</button><button class="btn primary" id="s-ok">Guardar</button>`, 'lg');
+  m.el.querySelectorAll('[data-t]').forEach(t => t.onclick = () => { m.el.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === t)); m.el.querySelectorAll('[data-pane]').forEach(p => p.style.display = p.dataset.pane === t.dataset.t ? '' : 'none'); });
+  idb.get('sysdir').then(h => { if (h) m.$('#s-dir').value = h.name; });
+  m.$('#s-pick').onclick = async () => { try { const h = await systemDir(true); m.$('#s-dir').value = h.name; toast('Carpeta del sistema guardada'); } catch (e) { if (e.name !== 'AbortError') toast(e.message, 'err'); } };
+  m.$('#s-revdl').onclick = async () => { const n = await revocationFile(); toast(`Lista descargada con ${n} licencia(s) desactivada(s). Súbela a GitHub.`); };
+  m.$('#s-ok').onclick = () => {
+    s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.country = m.$('#s-co').value;
+    s.revocationUrl = m.$('#s-rev').value.trim();
+    for (const k of ['basic', 'premium']) {
+      const g = f => m.el.querySelector(`[data-p="${k}"][data-f="${f}"]`).value;
+      P[k].name = g('name').trim() || P[k].name;
+      P[k].cop = Math.round(+g('cop').replace(/[^\d]/g, '') || 0); P[k].usd = Math.round((+g('usd').replace(/[^\d.]/g, '') || 0) * 100) / 100;
+      P[k].users = Math.max(0, parseInt(g('users')) || 0); P[k].products = Math.max(0, parseInt(g('products')) || 0);
+      P[k].off = FEATURES.map(f => f[0]).filter(f => !m.el.querySelector(`[data-p="${k}"][data-feat="${f}"]`).checked);
+    }
+    store.save(); toast('Configuración guardada'); m.close(); app();
+  };
+  m.$('#s-exp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.db, null, 2)], { type: 'application/json' })); a.download = `noir-licencias-clientes-${today()}.json`; a.click(); };
+  m.$('#s-imp').onclick = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = async () => { try { const d = JSON.parse(await i.files[0].text()); if (!Array.isArray(d.clients)) throw 0; if (!confirm(`¿Reemplazar tus ${S.db.clients.length} clientes por los ${d.clients.length} del respaldo?`)) return; d.issuedKeys = [...new Set([...(d.issuedKeys || []), ...(S.db.issuedKeys || [])])]; S.db = d; store.save(); m.close(); app(); toast('Respaldo restaurado'); } catch (e) { toast('Archivo inválido', 'err'); } }; i.click(); };
+  m.$('#s-pw').onclick = async () => {
+    const p1 = m.$('#s-p1').value, p2 = m.$('#s-p2').value, u2 = m.$('#s-u2').value.trim();
+    if (u2.length < 3) return toast('El usuario debe tener al menos 3 caracteres', 'warn');
+    if (p2 && p2.length < 6) return toast('La nueva contraseña debe tener al menos 6 caracteres', 'warn');
+    try { const file = await decryptSlot(p1); await sealPrivate(file, p2 || p1, u2); toast('Acceso al panel actualizado'); m.$('#s-p1').value = m.$('#s-p2').value = ''; }
+    catch (e) { toast('La contraseña actual no es correcta', 'err'); }
+  };
+}
+
+if (!window.isSecureContext || !crypto.subtle) document.getElementById('root').innerHTML = '<div class="lock"><div class="lock-box"><h1>Abre este archivo con doble clic</h1><p>El panel debe abrirse directamente desde la carpeta (file://) en Chrome o Edge.</p></div></div>';
+else lockScreen();
+</script>
+</body>
+</html>
