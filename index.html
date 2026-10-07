@@ -265,21 +265,23 @@ function lockScreen() {
   if (!slot) return setupScreen();
   $('#root').innerHTML = `<div class="lock"><div class="lock-box">
     <img src="assets/mono-cromo.png" alt=""><h1>Panel de Licencias</h1>
-    <p>Ingresa con tu usuario y contraseña.</p>
+    <p>Ingresa con tu usuario y contraseña <b>de vendedor</b>.<br><span class="small">Los usuarios de tus clientes (los del sistema NOIR STORE) no sirven aquí.</span></p>
     <div class="field"><label>Usuario</label><input id="us" autocomplete="username" autocapitalize="off" spellcheck="false"></div>
     <div class="field"><label>Contraseña</label><input id="pw" type="password" autocomplete="current-password"></div>
     <button class="btn chrome lg block" id="go">Entrar</button>
     <p class="small" style="margin-top:22px"><a href="#" id="reset" style="color:var(--muted)">¿Olvidaste la contraseña? Usar de nuevo tu archivo de clave</a></p></div></div>`;
   let fails = 0;
   const go = async () => {
-    const userOk = norm($('#us').value.trim()) === norm(slot.user || '');
+    const typed = $('#us').value.trim().replace(/^[*"'`]+|[*"'`]+$/g, '');
+    if (norm(typed) !== norm(slot.user || '')) { toast(`"${typed}" no es el usuario de este panel. Aquí entras con TU usuario de vendedor, no con el de un cliente.`, 'err'); $('#us').focus(); return; }
     try {
-      if (!userOk) throw new Error('user');
-      await openPrivate($('#pw').value);
+      const pw = $('#pw').value; let ok = false;
+      for (const p of [...new Set([pw, pw.trim(), pw.trim().replace(/^[*"'`]+|[*"'`]+$/g, '')])]) { try { await openPrivate(p); ok = true; break; } catch (e) { } }
+      if (!ok) throw new Error('pass');
       try { localStorage.setItem('noirlic-lastuser', $('#us').value.trim()); } catch (e) { }
       app();
     } catch (e) {
-      fails++; toast('Usuario o contraseña incorrectos', 'err'); $('#pw').value = ''; $('#pw').focus();
+      fails++; toast('Contraseña del panel incorrecta', 'err'); $('#pw').value = ''; $('#pw').focus();
       if (fails >= 5) { $('#go').disabled = true; toast('Demasiados intentos. Espera 30 segundos.', 'warn'); setTimeout(() => { fails = 0; const g = $('#go'); if (g) g.disabled = false; }, 30000); }
     }
   };
