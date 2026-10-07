@@ -347,6 +347,8 @@ function newKey() {
   store.save();
   return k;
 }
+const DEFAULT_WEB_URL = 'https://noirstudio-web.github.io/noir-store/';
+const webUrlOf = () => S.db.settings.webUrl || DEFAULT_WEB_URL;
 const licenseMsg = (c, key) => `Hola ${c.contact || c.business} 👋\n\nEste es tu código de licencia de *NOIR STORE* para *${c.business}*:\n\n🔑 *${key}*\n\nGuárdalo: te lo pediremos para renovar, cambiar de plan o recibir soporte. También lo ves en tu sistema en Configuración → Suscripción.\n\n${S.db.settings.vendor}`;
 function migratePanel() {
   const d = S.db;
@@ -417,7 +419,7 @@ function app() {
     $('#rows').innerHTML = rows.map(c => {
       const s = clientState(c);
       const main = s.k === 'disabled' ? `<button class="btn sm" data-a="manage" data-id="${c.id}">Reactivar…</button>`
-        : !c.expires ? `<button class="btn sm primary" data-a="deliver" data-id="${c.id}">📦 Entregar sistema</button>`
+        : !c.expires ? `<button class="btn sm primary" data-a="code" data-id="${c.id}">🔑 Dar acceso</button>`
           : `<button class="btn sm primary" data-a="code" data-id="${c.id}">Renovar</button>`;
       return `<tr>
       <td><div class="t1">${esc(c.business)}</div><div class="t2">${esc([c.city, c.country && countryName(c.country).split(' (')[0]].filter(Boolean).join(' · '))}</div></td>
@@ -471,7 +473,7 @@ function clientForm(c) {
         <button class="btn primary" id="f-kgen" type="button" style="white-space:nowrap">🔑 Generar código de licencia</button><button class="btn" id="f-kcopy" type="button">Copiar</button></div>
       <span class="hint">Letras y números intercalados. Cada código es único y nunca se repite.</span></div>
     <div class="field span2"><label>Notas</label><textarea id="f-n" rows="2">${esc(c.notes)}</textarea></div></div>`,
-    `${!isNew ? '<button class="btn danger" id="f-del" style="margin-right:auto">Eliminar</button>' : ''}<button class="btn ghost" data-x>Cancelar</button><button class="btn primary" id="f-ok">${isNew ? 'Guardar y entregar sistema' : 'Guardar'}</button>`, 'lg');
+    `${!isNew ? '<button class="btn danger" id="f-del" style="margin-right:auto">Eliminar</button>' : ''}<button class="btn ghost" data-x>Cancelar</button><button class="btn primary" id="f-ok">${isNew ? 'Guardar y dar acceso' : 'Guardar'}</button>`, 'lg');
   m.$('#tiers').onclick = e => { const b = e.target.closest('[data-tier]'); if (!b) return; tier = b.dataset.tier; m.el.querySelectorAll('#tiers button').forEach(x => x.classList.toggle('on', x === b)); };
   m.$('#f-gen').onclick = () => m.$('#f-pw').value = genPassword();
   let key = c.key || '';
@@ -502,7 +504,7 @@ function clientForm(c) {
     const i = S.db.clients.findIndex(x => x.id === c.id);
     if (i >= 0) S.db.clients[i] = c; else S.db.clients.push(c);
     store.save(); m.close(); app();
-    if (isNew) codeModal(c, { deliver: true });
+    if (isNew) codeModal(c);
   };
 }
 
@@ -513,7 +515,7 @@ function codeModal(c, opt = {}) {
   const deliver = !!opt.deliver, reset = !!opt.reset && !!c.expires && c.expires >= today();
   let tier = c.nextTier || c.tier || 'basic';
   let dur = reset ? DURATIONS[4] : DURATIONS[0];
-  const title = deliver ? 'Entregar sistema' : reset ? 'Restablecer acceso' : (first ? 'Código de activación' : 'Renovar suscripción');
+  const title = deliver ? 'Versión instalable (.zip)' : reset ? 'Restablecer acceso' : (first ? 'Dar acceso' : 'Renovar suscripción');
   const m = modal(`${title} · ${esc(c.business)}`, `
     ${deliver && !reset ? `<div class="callout" style="margin-bottom:14px">📦 Se generará el sistema <b>NOIR STORE</b> para <b>${esc(c.business)}</b> (${esc(countryName(c.country || S.db.settings.country))}), ya activado con su plan, su licencia <b class="mono">${esc(c.key)}</b> y su usuario <b class="mono">${esc(c.username)}</b>.</div>` : ''}
     ${reset ? `<div class="callout warn" style="margin-bottom:14px">Se mantiene su plan y su vencimiento (${fmtDate(c.expires)}). El usuario <b class="mono">${esc(c.username)}</b> quedará con la contraseña registrada en su ficha.</div>` : ''}
@@ -530,7 +532,7 @@ function codeModal(c, opt = {}) {
       <label class="check span2"><input type="checkbox" id="c-cred" ${first || deliver || reset || c.credsPending ? 'checked' : ''} ${deliver || reset ? 'disabled' : ''}> Incluir usuario y contraseña <span class="muted small">(primera activación o para restablecer el acceso del administrador)</span></label>
     </div>
     <div id="c-out" style="margin-top:16px"></div>`,
-    `<button class="btn ghost" data-x>Cerrar</button><button class="btn chrome" id="c-go">${deliver ? '📦 Generar y descargar sistema' : reset ? 'Generar código de acceso' : 'Generar código'}</button>`, 'lg');
+    `<button class="btn ghost" data-x>Cerrar</button><button class="btn chrome" id="c-go">${deliver ? '📦 Generar y descargar .zip' : reset ? 'Generar código de acceso' : first ? '🔑 Generar acceso' : 'Generar código'}</button>`, 'lg');
   const plan = () => S.db.settings.plans[tier];
   const calc = () => {
     const from = m.$('#c-from').value || today();
@@ -554,7 +556,10 @@ function codeModal(c, opt = {}) {
     const p = S.db.settings.plans[tier];
     const durName = reset ? ((c.plan || '').split(' · ')[1] || 'Suscripción') : dur[1] ? dur[0] : `Hasta ${fmtDate(to)}`;
     const planName = `${p.name} · ${durName}`;
-    const payload = { v: 2, id: uid(), k: c.key, n: c.business, p: planName, tier, lim: { u: p.users, pr: p.products, on: FEATURES.map(f => f[0]).filter(f => !p.off.includes(f)) }, e: to, t: today() };
+    const payload = { v: 2, id: uid(), k: c.key, n: c.business, p: planName, tier, lim: { u: p.users, pr: p.products, on: FEATURES.map(f => f[0]).filter(f => !p.off.includes(f)) }, e: to, t: today(), co: c.country || S.db.settings.country || 'CO', vn: S.db.settings.vendor };
+    if (c.storePhone) payload.cp = c.storePhone;
+    if (c.city) payload.ca = c.city;
+    if (S.db.settings.whatsapp) payload.vw = S.db.settings.whatsapp;
     if (withCreds) { const s = randHex(12); Object.assign(payload, { u: c.username, s, h: hashPass(c.password, s), an: c.contact || 'Administrador' }); }
     const btn = m.$('#c-go'); btn.disabled = true;
     const code = await makeCode(payload);
@@ -571,11 +576,12 @@ function codeModal(c, opt = {}) {
     const creds = `🔐 Tus datos de acceso (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n(Puedes cambiarlos en Configuración → Mi cuenta)`;
     const msg = deliver
       ? `Hola ${c.contact || c.business} 👋\n\nTe envío tu sistema *NOIR STORE* para *${c.business}*, ya configurado y activado.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n${tier === 'premium' ? '\n⭐ Tu plan Premium incluye: apartados, programa de puntos, promociones automáticas, comisiones, reportes, compras, WhatsApp, resúmenes al dueño, logo propio y soporte prioritario.\n' : ''}\n📦 Cómo instalarlo:\n1. Descomprime el archivo .zip que te envié (clic derecho → Extraer todo).\n2. Abre la carpeta y haz doble clic en *INICIAR NOIR STORE.bat*.\n3. Entra con tus datos:\n\n${creds}\n\nPara guardar en archivos y usarlo desde varios equipos instala Node.js (https://nodejs.org). Sin Node.js también funciona en el navegador.\n\n${S.db.settings.vendor}`
-      : `Hola ${c.contact || c.business} 👋\n\nAquí tienes tu código ${reset ? 'para restablecer tu acceso' : first ? 'de activación' : 'de renovación'} de *NOIR STORE*\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n\n${code}\n\n${withCreds ? creds + '\n\n' : ''}Cómo usarlo: copia el código completo y pégalo en Configuración → Suscripción (o en la pantalla de activación).\n\n${S.db.settings.vendor}`;
+      : withCreds && !reset && first ? `Hola ${c.contact || c.business} 👋\n\nYa tienes tu sistema *NOIR STORE* para *${c.business}*. No tienes que descargar nada.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\n${tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n🌐 1. Entra aquí (computador, tablet o celular):\n${webUrlOf()}\n\n🔑 2. Pega este código de activación:\n\n${code}\n\n👤 3. Entra con tus datos (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n💾 Tu información se guarda en ese navegador: usa siempre el mismo equipo y descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`
+      : `Hola ${c.contact || c.business} 👋\n\nAquí tienes tu código ${reset ? 'para restablecer tu acceso' : first ? 'de activación' : 'de renovación'} de *NOIR STORE*\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n\n${code}\n\n${withCreds ? creds + '\n\n' : ''}Cómo usarlo: entra a tu sistema (${webUrlOf()}), ve a Configuración → Suscripción y pega el código completo.\n\n${S.db.settings.vendor}`;
     m.$('#c-out').innerHTML = `<div class="callout ok" style="margin-bottom:10px">✓ ${deliver ? 'Sistema preparado' : 'Código generado'}: ${esc(planName)} hasta el ${fmtDate(to)}${withCreds ? ' · incluye usuario y contraseña' : ''}</div>
       ${deliver ? '<div id="c-zipst" class="callout" style="margin-bottom:10px">Preparando el .zip…</div>' : ''}
       <div class="code" id="c-code">${esc(code)}</div>
-      <div class="row" style="margin-top:10px">${withCreds ? `<button class="btn primary" id="c-zip">📦 Descargar sistema configurado (.zip)</button>` : ''}<button class="btn" id="c-copy">Copiar código</button><button class="btn" id="c-copym">Copiar mensaje</button>
+      <div class="row" style="margin-top:10px">${withCreds ? `<button class="btn ghost" id="c-zip" title="Solo si el cliente prefiere instalarlo en su computador">📦 Versión instalable (.zip, opcional)</button>` : ''}<button class="btn" id="c-copy">Copiar código</button><button class="btn" id="c-copym">Copiar mensaje</button>
       ${c.phone ? `<a class="btn success" target="_blank" href="${waLink(c.phone, msg)}">Enviar por WhatsApp</a>` : '<span class="muted small">Agrega su WhatsApp para enviarlo directo.</span>'}</div>
       ${deliver ? '<p class="small muted" style="margin-bottom:0">WhatsApp no permite adjuntar archivos desde un enlace: al abrir el chat, adjunta el .zip de tu carpeta Descargas y envía el mensaje.</p>' : ''}`;
     m.$('#c-copy').onclick = () => { navigator.clipboard.writeText(code); toast('Código copiado'); };
@@ -608,8 +614,8 @@ function manageModal(c) {
     ${c.credsPending ? `<div class="callout warn" style="margin-bottom:14px">⚠️ Cambiaste el usuario o la contraseña de este cliente y todavía no se los has enviado. Su sistema sigue con los datos anteriores. Usa <b>🔐 Restablecer acceso</b> (o renueva) y envíale el código.</div>` : ''}
     ${c.notes ? `<div class="callout" style="margin-bottom:14px">${esc(c.notes)}</div>` : ''}
     <div class="row" style="margin-bottom:16px">
-      ${c.status !== 'disabled' ? `<button class="btn primary" id="m-renew">${c.expires ? 'Renovar / cambiar plan' : '📦 Entregar sistema'}</button>` : ''}
-      ${c.status !== 'disabled' && c.expires && c.expires >= today() ? `<button class="btn" id="m-zip">📦 Descargar su sistema otra vez</button><button class="btn" id="m-reset">🔐 Restablecer acceso</button>` : ''}
+      ${c.status !== 'disabled' ? `<button class="btn primary" id="m-renew">${c.expires ? 'Renovar / cambiar plan' : '🔑 Dar acceso'}</button>` : ''}
+      ${c.status !== 'disabled' && c.expires && c.expires >= today() ? `<button class="btn ghost" id="m-zip">📦 Versión instalable (.zip)</button><button class="btn" id="m-reset">🔐 Restablecer acceso</button>` : ''}
       <span class="spacer"></span>
       ${c.status === 'active' && c.expires ? '<button class="btn" id="m-cancel">Cancelar suscripción</button>' : ''}
       ${c.status === 'cancelled' ? '<button class="btn" id="m-resume">Reanudar suscripción</button>' : ''}
@@ -631,7 +637,7 @@ function manageModal(c) {
     toast(`Nuevo código de licencia: ${c.key}`); reopen();
   };
   const on = (id, fn) => { const b = m.$(id); if (b) b.onclick = fn; };
-  on('#m-renew', () => { m.close(); codeModal(c, { deliver: !c.expires }); });
+  on('#m-renew', () => { m.close(); codeModal(c); });
   on('#m-zip', () => { m.close(); codeModal(c, { deliver: true, reset: true }); });
   on('#m-reset', () => { m.close(); codeModal(c, { reset: true }); });
   on('#m-cancel', () => {
@@ -686,6 +692,7 @@ function settingsModal() {
     <div data-pane="gen"><div class="grid2">
     <div class="field"><label>Tu nombre / marca</label><input id="s-v" value="${esc(s.vendor)}"></div>
     <div class="field"><label>Tu WhatsApp</label><input id="s-w" value="${esc(s.whatsapp)}" placeholder="573001234567"></div>
+    <div class="field span2"><label>Enlace del sistema web (lo recibe cada cliente)</label><input id="s-url" value="${esc(webUrlOf())}"></div>
     <div class="callout span2 small">Tu nombre y WhatsApp se incluyen automáticamente en cada sistema que entregas: tus clientes verán el botón “Contactar” para renovar.</div>
     <div class="field"><label>País por defecto de nuevos clientes</label><select id="s-co">${COUNTRIES.map(([k, n]) => `<option value="${k}" ${(s.country || 'CO') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="field"><label>Carpeta del sistema NOIR STORE</label><div class="row" style="flex-wrap:nowrap"><input id="s-dir" readonly placeholder="Sin elegir"><button class="btn" id="s-pick" type="button">Elegir</button></div><span class="hint">La que contiene index.html. Se usa para generar los .zip.</span></div>
@@ -703,7 +710,7 @@ function settingsModal() {
   m.$('#s-pick').onclick = async () => { try { const h = await systemDir(true); m.$('#s-dir').value = h.name; toast('Carpeta del sistema guardada'); } catch (e) { if (e.name !== 'AbortError') toast(e.message, 'err'); } };
   m.$('#s-revdl').onclick = async () => { const n = await revocationFile(); toast(`Lista descargada con ${n} licencia(s) desactivada(s). Súbela a GitHub.`); };
   m.$('#s-ok').onclick = () => {
-    s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.country = m.$('#s-co').value;
+    s.vendor = m.$('#s-v').value.trim() || 'NOIR Studio'; s.whatsapp = m.$('#s-w').value.replace(/\D/g, ''); s.country = m.$('#s-co').value; s.webUrl = m.$('#s-url').value.trim() || DEFAULT_WEB_URL;
     s.revocationUrl = m.$('#s-rev').value.trim();
     for (const k of ['basic', 'premium']) {
       const g = f => m.el.querySelector(`[data-p="${k}"][data-f="${f}"]`).value;
