@@ -515,7 +515,7 @@ function codeModal(c, opt = {}) {
   const deliver = !!opt.deliver, reset = !!opt.reset && !!c.expires && c.expires >= today();
   let tier = c.nextTier || c.tier || 'basic';
   let dur = reset ? DURATIONS[4] : DURATIONS[0];
-  const title = deliver ? 'Versión instalable (.zip)' : reset ? 'Restablecer acceso' : (first ? 'Dar acceso' : 'Renovar suscripción');
+  const title = deliver ? 'Versión instalable (.zip)' : reset ? 'Acceso web / restablecer' : (first ? 'Dar acceso' : 'Renovar suscripción');
   const m = modal(`${title} · ${esc(c.business)}`, `
     ${deliver && !reset ? `<div class="callout" style="margin-bottom:14px">📦 Se generará el sistema <b>NOIR STORE</b> para <b>${esc(c.business)}</b> (${esc(countryName(c.country || S.db.settings.country))}), ya activado con su plan, su licencia <b class="mono">${esc(c.key)}</b> y su usuario <b class="mono">${esc(c.username)}</b>.</div>` : ''}
     ${reset ? `<div class="callout warn" style="margin-bottom:14px">Se mantiene su plan y su vencimiento (${fmtDate(c.expires)}). El usuario <b class="mono">${esc(c.username)}</b> quedará con la contraseña registrada en su ficha.</div>` : ''}
@@ -532,7 +532,7 @@ function codeModal(c, opt = {}) {
       <label class="check span2"><input type="checkbox" id="c-cred" ${first || deliver || reset || c.credsPending ? 'checked' : ''} ${deliver || reset ? 'disabled' : ''}> Incluir usuario y contraseña <span class="muted small">(primera activación o para restablecer el acceso del administrador)</span></label>
     </div>
     <div id="c-out" style="margin-top:16px"></div>`,
-    `<button class="btn ghost" data-x>Cerrar</button><button class="btn chrome" id="c-go">${deliver ? '📦 Generar y descargar .zip' : reset ? 'Generar código de acceso' : first ? '🔑 Generar acceso' : 'Generar código'}</button>`, 'lg');
+    `<button class="btn ghost" data-x>Cerrar</button><button class="btn chrome" id="c-go">${deliver ? '📦 Generar y descargar .zip' : reset ? '🔑 Generar acceso' : first ? '🔑 Generar acceso' : 'Generar código'}</button>`, 'lg');
   const plan = () => S.db.settings.plans[tier];
   const calc = () => {
     const from = m.$('#c-from').value || today();
@@ -576,7 +576,7 @@ function codeModal(c, opt = {}) {
     const creds = `🔐 Tus datos de acceso (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n(Puedes cambiarlos en Configuración → Mi cuenta)`;
     const msg = deliver
       ? `Hola ${c.contact || c.business} 👋\n\nTe envío tu sistema *NOIR STORE* para *${c.business}*, ya configurado y activado.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n${tier === 'premium' ? '\n⭐ Tu plan Premium incluye: apartados, programa de puntos, promociones automáticas, comisiones, reportes, compras, WhatsApp, resúmenes al dueño, logo propio y soporte prioritario.\n' : ''}\n📦 Cómo instalarlo:\n1. Descomprime el archivo .zip que te envié (clic derecho → Extraer todo).\n2. Abre la carpeta y haz doble clic en *INICIAR NOIR STORE.bat*.\n3. Entra con tus datos:\n\n${creds}\n\nPara guardar en archivos y usarlo desde varios equipos instala Node.js (https://nodejs.org). Sin Node.js también funciona en el navegador.\n\n${S.db.settings.vendor}`
-      : withCreds && !reset && first ? `Hola ${c.contact || c.business} 👋\n\nYa tienes tu sistema *NOIR STORE* para *${c.business}*. No tienes que descargar nada.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\n${tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n🌐 1. Entra aquí (computador, tablet o celular):\n${webUrlOf()}\n\n🔑 2. Pega este código de activación:\n\n${code}\n\n👤 3. Entra con tus datos (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n💾 Tu información se guarda en ese navegador: usa siempre el mismo equipo y descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`
+      : withCreds ? `Hola ${c.contact || c.business} 👋\n\n${first ? 'Ya tienes tu sistema' : 'Aquí tienes el acceso a tu sistema'} *NOIR STORE* para *${c.business}*. No tienes que descargar nada.\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\n${tier === 'premium' ? '⭐ Incluye apartados, puntos, promociones, comisiones, reportes, compras, WhatsApp y más.\n' : ''}\n🌐 1. Entra aquí (computador, tablet o celular):\n${webUrlOf()}\n\n🔑 2. Pega este código de activación:\n\n${code}\n\n👤 3. Entra con tus datos (escríbelos tal cual):\nUsuario:\n${c.username}\nContraseña:\n${c.password}\n\n💾 Tu información se guarda en ese navegador: usa siempre el mismo equipo y descarga un respaldo cada semana (Configuración → Respaldo y datos).\n\n${S.db.settings.vendor}`
       : `Hola ${c.contact || c.business} 👋\n\nAquí tienes tu código ${reset ? 'para restablecer tu acceso' : first ? 'de activación' : 'de renovación'} de *NOIR STORE*\nPlan: *${planName}* · válido hasta el *${fmtDate(to)}*\nLicencia: ${c.key}\n\n${code}\n\n${withCreds ? creds + '\n\n' : ''}Cómo usarlo: entra a tu sistema (${webUrlOf()}), ve a Configuración → Suscripción y pega el código completo.\n\n${S.db.settings.vendor}`;
     m.$('#c-out').innerHTML = `<div class="callout ok" style="margin-bottom:10px">✓ ${deliver ? 'Sistema preparado' : 'Código generado'}: ${esc(planName)} hasta el ${fmtDate(to)}${withCreds ? ' · incluye usuario y contraseña' : ''}</div>
       ${deliver ? '<div id="c-zipst" class="callout" style="margin-bottom:10px">Preparando el .zip…</div>' : ''}
@@ -615,7 +615,7 @@ function manageModal(c) {
     ${c.notes ? `<div class="callout" style="margin-bottom:14px">${esc(c.notes)}</div>` : ''}
     <div class="row" style="margin-bottom:16px">
       ${c.status !== 'disabled' ? `<button class="btn primary" id="m-renew">${c.expires ? 'Renovar / cambiar plan' : '🔑 Dar acceso'}</button>` : ''}
-      ${c.status !== 'disabled' && c.expires && c.expires >= today() ? `<button class="btn ghost" id="m-zip">📦 Versión instalable (.zip)</button><button class="btn" id="m-reset">🔐 Restablecer acceso</button>` : ''}
+      ${c.status !== 'disabled' && c.expires && c.expires >= today() ? `<button class="btn ghost" id="m-zip">📦 Versión instalable (.zip)</button><button class="btn primary" id="m-reset" title="Genera un código con su usuario y contraseña (mantiene su plan y su vencimiento). Sirve para entrar por el enlace web o para restablecer el acceso.">🔑 Enviar acceso web</button>` : ''}
       <span class="spacer"></span>
       ${c.status === 'active' && c.expires ? '<button class="btn" id="m-cancel">Cancelar suscripción</button>' : ''}
       ${c.status === 'cancelled' ? '<button class="btn" id="m-resume">Reanudar suscripción</button>' : ''}
